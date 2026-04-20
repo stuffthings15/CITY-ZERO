@@ -1,0 +1,38 @@
+name: CI - Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore
+      run: dotnet restore "CITY#ZERO.csproj"
+
+    - name: Build
+      run: dotnet build "CITY#ZERO.csproj" --configuration Release --no-restore
+
+    - name: Run tests (if any)
+      run: |
+        if (Test-Path "./Tests") { dotnet test ./Tests --verbosity normal }
+      shell: pwsh
+
+    - name: Upload inventory.json
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: inventory
+        path: inventory.json

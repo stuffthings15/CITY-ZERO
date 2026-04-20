@@ -1,0 +1,59 @@
+# Build artifacts
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# MSBuild
+*.ilk
+*.pdb
+*.idb
+*.log
+
+# Publish outputs
+publish/
+
+# Certificates
+*.pfx
+
+# NuGet
+*.nupkg
+/packages/
+
+# Unity specific
+Assets/**/Library/
+Assets/**/Temp/
+Assets/**/Obj/
+Assets/**/Build/
+Library/
+Temp/
+Obj/
+Build/
+UserSettings/
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# JetBrains Rider
+.idea/
+
+# Node
+node_modules/
+
+# Ignore local inventory caches (keep generated inventory.json if desired)
+*.inventory.json
+
+# Ignore user-specific publish profiles
+**/Properties/PublishProfiles/*.pubxml.user

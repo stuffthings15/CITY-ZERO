@@ -1,0 +1,20 @@
+{
+  "prefabName": "PF_Player",
+  "components": [
+    "Rigidbody",
+    "CapsuleCollider",
+    "PlayerController",
+    "PlayerInput",
+    "PlayerInputBridge",
+    "InteractableDetectorPrompt",
+    "HealthComponent",
+    "WeaponMotor"
+  ],
+  "children": [
+    "VisualRoot",
+    "AimPivot",
+    "AimPivot/FirePoint",
+    "Detector",
+    "CameraTarget"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "prefabName": "PF_NPC_Police_Base",
+  "components": [
+    "CapsuleCollider",
+    "HealthComponent",
+    "PoliceAIController"
+  ],
+  "children": [
+    "VisualRoot",
+    "HeadMarker",
+    "WeaponSocket",
+    "DebugLabelAnchor"
+  ]
+}

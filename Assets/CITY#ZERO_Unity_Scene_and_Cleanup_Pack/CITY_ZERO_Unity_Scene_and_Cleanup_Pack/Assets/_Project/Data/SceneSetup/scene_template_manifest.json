@@ -1,0 +1,29 @@
+{
+  "bootstrapScene": [
+    "GameBootstrap",
+    "ConfigDatabase",
+    "HeatSystem",
+    "SaveManager",
+    "MissionManagerSafe",
+    "MissionFactorySafe",
+    "DebugCommandRegistry"
+  ],
+  "sandboxGlobalScene": [
+    "PF_Player",
+    "MainCameraRig",
+    "HUDCanvas",
+    "DebugCanvas",
+    "DirectionalLight"
+  ],
+  "districtOldQuarterScene": [
+    "RoadKit",
+    "Buildings",
+    "TrafficLanePaths",
+    "VehicleSpawner",
+    "CivilianSpawnPoints",
+    "PolicePatrolPoints",
+    "MissionTriggerVolumes",
+    "ShopMarkers",
+    "SafehouseMarker"
+  ]
+}

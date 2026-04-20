@@ -1,0 +1,31 @@
+{
+  "id": "vz_compact_01",
+  "displayName": "Nimble S2",
+  "class": "compact",
+  "manufacturer": "Vesta",
+  "mass": 980.0,
+  "maxSpeed": 42.0,
+  "acceleration": 15.5,
+  "brakeForce": 19.0,
+  "steeringResponse": 1.2,
+  "traction": 0.86,
+  "durability": 0.45,
+  "heatSignature": 0.25,
+  "cargoSlots": 4,
+  "seatCount": 4,
+  "hotwireDifficulty": 0.2,
+  "spawnWeight": 1.1,
+  "districtWeights": [
+    {"districtId": "old_quarter", "weight": 1.4},
+    {"districtId": "glass_heights", "weight": 0.2},
+    {"districtId": "ash_industrial", "weight": 0.8}
+  ],
+  "liveries": ["default_white", "faded_blue", "taxi_alt"],
+  "audioProfile": "compact_gas_01",
+  "damageModel": {
+    "engineHealth": 100,
+    "bodyHealth": 70,
+    "wheelHealth": 25,
+    "fireThreshold": 12
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "mq_a1_03_dead_drop_dive",
+  "displayName": "Dead Drop Dive",
+  "missionType": "courier_escape",
+  "giver": "ivy_quill",
+  "district": "old_quarter",
+  "recommendedTier": 1,
+  "prerequisites": {
+    "storyFlags": ["completed_mq_a1_02_boosted_steel"],
+    "minRep": []
+  },
+  "objectives": [
+    {"type": "pickup", "target": "package_dead_drop_terminal", "failOnAlert": false, "timeLimit": 0, "requiredHeatBelow": 0, "timeout": 0},
+    {"type": "deliver", "target": "rooftop_mailbox_07", "failOnAlert": false, "timeLimit": 180, "requiredHeatBelow": 0, "timeout": 0},
+    {"type": "escape_heat", "target": "", "failOnAlert": false, "timeLimit": 0, "requiredHeatBelow": 1, "timeout": 120}
+  ],
+  "rewards": {
+    "cash": 900,
+    "rep": [
+      {"factionId": "blue_saints", "amount": 8},
+      {"factionId": "velvet_circuit", "amount": 4}
+    ],
+    "unlockFlags": ["contact_nox_available"]
+  },
+  "failureConditions": ["player_dead", "package_destroyed"],
+  "runtimeModifiers": {
+    "spawnExtraPatrols": false,
+    "civilianDensityMultiplier": 1.0,
+    "trafficMultiplier": 1.15
+  }
+}

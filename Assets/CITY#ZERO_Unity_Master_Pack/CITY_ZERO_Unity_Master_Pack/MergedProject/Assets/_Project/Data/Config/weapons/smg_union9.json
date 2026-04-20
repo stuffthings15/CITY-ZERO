@@ -1,0 +1,23 @@
+{
+  "id": "smg_union9",
+  "displayName": "Union-9 SMG",
+  "category": "smg",
+  "damage": 14,
+  "fireRate": 11.5,
+  "magazineSize": 28,
+  "reloadTime": 1.9,
+  "spreadBase": 2.4,
+  "spreadMove": 4.2,
+  "recoil": 1.6,
+  "range": 24.0,
+  "suppression": 0.3,
+  "armorPenetration": 0.15,
+  "threatNoise": 0.8,
+  "ammoType": "smg_9mm",
+  "economy": {
+    "buyPrice": 1450,
+    "sellPrice": 500,
+    "ammoBoxPrice": 120
+  },
+  "tags": ["automatic", "compact", "driveby_compatible"]
+}

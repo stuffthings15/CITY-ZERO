@@ -1,0 +1,278 @@
+You are a senior AAA game design, systems architecture, and production AI.
+
+Your task is to generate a COMPLETE, PRODUCTION-READY package for an ORIGINAL top-down open-world crime-action game (spiritual successor style, NOT derivative, NO copyrighted assets or replication).
+
+You must output highly detailed, deeply structured, implementation-ready content across design, technical systems, asset pipelines, and production planning.
+
+The project must be original IP and commercially viable.
+
+--------------------------------------------------
+PROJECT OVERVIEW
+--------------------------------------------------
+
+Title: CITY//ZERO
+
+Genre:
+Top-down open-world action sandbox (driving + shooting + systemic simulation)
+
+Core Pillars:
+- High readability from top-down perspective
+- Systemic emergent gameplay (not script-dependent)
+- Fast arcade feel with deep simulation
+- Dense, living city simulation
+- Original IP (NO copying existing games)
+- Data-driven and scalable architecture
+
+--------------------------------------------------
+CRITICAL CONSTRAINTS
+--------------------------------------------------
+
+DO NOT:
+- Copy or recreate any existing game's map, factions, UI, missions, or assets
+- Use copyrighted textures, models, audio, or likenesses
+- Create "lookalike" vehicles or characters clearly derived from existing IP
+
+ALL CONTENT MUST BE:
+- Original
+- Distinct
+- Production-usable
+
+--------------------------------------------------
+OUTPUT REQUIREMENTS
+--------------------------------------------------
+
+Generate ALL of the following sections in order, with maximum detail:
+
+--------------------------------------------------
+1. GAME DESIGN DOCUMENT (GDD)
+--------------------------------------------------
+
+Include:
+
+1.1 High Concept
+- Elevator pitch
+- Player fantasy
+- Tone and setting
+
+1.2 Core Gameplay Loop
+- Step-by-step loop
+- Short-term vs long-term goals
+
+1.3 Player Systems
+- Movement (detailed mechanics)
+- Combat (weapon handling, feedback, balance philosophy)
+- Health/armor systems
+- Interaction systems
+
+1.4 Vehicle System
+- Vehicle classes
+- Handling models
+- Damage systems
+- Enter/exit logic
+- Theft mechanics
+
+1.5 Wanted / Heat System
+- Heat levels (0–5 minimum)
+- Escalation logic
+- Police behaviors per level
+- Evasion mechanics
+
+1.6 AI Systems
+- Civilian behavior models
+- Police AI architecture
+- Faction AI behavior trees or state systems
+
+1.7 Faction System
+- 5 original factions (fully detailed)
+- Motivations
+- Territories
+- Gameplay impact
+- Reputation system
+
+1.8 Mission System
+- Mission structure
+- 15+ mission archetypes
+- 10 example missions (fully written, step-by-step)
+
+1.9 World Design
+- City structure (5+ districts)
+- District identity, gameplay traits, risks
+- Environmental systems (traffic, weather, time)
+
+1.10 Economy and Progression
+- Currency systems
+- Upgrade trees
+- Skill systems
+- Unlock loops
+
+1.11 Emergent Gameplay Systems
+- System interactions
+- At least 10 emergent scenario examples
+
+1.12 Live Events System
+- Dynamic world events
+- Trigger logic
+- Player impact
+
+--------------------------------------------------
+2. TECHNICAL DESIGN DOCUMENT (TDD)
+--------------------------------------------------
+
+2.1 Engine Recommendation
+(Unity / Unreal / Godot with justification)
+
+2.2 System Architecture
+- Modular system breakdown:
+  - Player controller
+  - Vehicles
+  - AI
+  - Heat system
+  - Missions
+  - Economy
+  - World events
+
+2.3 Data-Driven Design
+Provide JSON-style schemas for:
+- Missions
+- Vehicles
+- Weapons
+- Factions
+- Districts
+- Shops
+- Events
+
+2.4 AI Implementation
+- Behavior trees or state machines
+- Pathfinding approach
+- Traffic system logic
+
+2.5 Save/Load System
+- What is persisted
+- Data structure
+
+2.6 Performance Strategy
+- LODs
+- Culling
+- AI scaling
+- Simulation throttling
+
+--------------------------------------------------
+3. ART & ASSET PRODUCTION PLAN
+--------------------------------------------------
+
+3.1 Art Direction
+- Visual style definition
+- Color theory
+- Lighting rules
+
+3.2 Environment Assets
+- Full categorized asset list (200+ items)
+
+3.3 Characters
+- Modular system
+- Animation list
+
+3.4 Vehicles
+- 25+ original vehicle concepts
+- Categories and roles
+
+3.5 Weapons
+- 15+ original weapons
+- Design philosophy
+
+3.6 UI/UX Assets
+- HUD breakdown
+- Menu flows
+
+3.7 Audio Plan
+- Music system
+- SFX categories
+- Voice design
+
+--------------------------------------------------
+4. CONTENT PIPELINE
+--------------------------------------------------
+
+- Modeling workflow
+- Texturing pipeline
+- Rigging + animation
+- Integration steps
+- Naming conventions
+- Version control approach
+
+--------------------------------------------------
+5. MVP + FULL SCOPE PLAN
+--------------------------------------------------
+
+5.1 MVP (Vertical Slice)
+- 1 district
+- 2 factions
+- 8 vehicles
+- 6 weapons
+- 15 missions
+- full gameplay loop
+
+5.2 Full Game Scope
+- Expanded systems
+- Full content counts
+
+--------------------------------------------------
+6. DEVELOPMENT ROADMAP
+--------------------------------------------------
+
+Phases:
+- Prototype
+- Pre-production
+- Vertical Slice
+- Alpha
+- Beta
+- Release
+
+Include:
+- timelines
+- deliverables per phase
+
+--------------------------------------------------
+7. QA AND TESTING PLAN
+--------------------------------------------------
+
+- Bug categories
+- Testing methodology
+- Edge cases
+- Simulation stress testing
+
+--------------------------------------------------
+8. RISK ANALYSIS
+--------------------------------------------------
+
+- Technical risks
+- Scope risks
+- Design risks
+- Mitigation strategies
+
+--------------------------------------------------
+9. FOLDER STRUCTURE
+--------------------------------------------------
+
+Provide a full production-ready folder structure for:
+- Code
+- Assets
+- Audio
+- Data
+- UI
+- Builds
+
+--------------------------------------------------
+10. FINAL REQUIREMENTS
+--------------------------------------------------
+
+- Be EXTREMELY detailed
+- Avoid vague statements
+- Provide implementation-ready structures
+- Use lists, tables, and schemas where useful
+- Maintain internal consistency
+- Prioritize clarity and execution value
+
+--------------------------------------------------
+
+BEGIN GENERATION NOW.

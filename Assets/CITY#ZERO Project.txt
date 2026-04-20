@@ -1,0 +1,867 @@
+Project Title
+
+CITY//ZERO
+
+One-Line Pitch
+
+An original, top-down open-world crime sandbox set in a dense retro-modern metropolis, combining arcade chaos, systemic faction warfare, reactive police escalation, vehicle-based traversal, emergent missions, and a fully simulated urban ecology.
+
+Core Vision
+
+Build a commercially viable, original game inspired by the top-down open-world crime-action genre, but not dependent on any copyrighted game content. It must feel immediately readable, kinetic, replayable, systemic, and simulation-rich.
+
+The game should deliver:
+
+instant pick-up-and-play controls
+deep emergent systems
+layered progression
+destructible, reactive city spaces
+meaningful faction dynamics
+vehicle chaos
+police heat escalation
+mission variety
+high replay value
+moddable data-driven architecture
+a complete asset pipeline with original art and sound
+Non-Negotiable Design Pillars
+Readable from above
+Every gameplay-relevant object must be legible at a glance.
+Systemic over scripted
+Systems should interact to create chaos without needing constant hand-authored sequences.
+Fast arcade feel, deep simulation underneath
+Easy to control, hard to master, rich in consequences.
+Original IP
+No copied names, districts, characters, gangs, logos, map layouts, vehicle silhouettes, mission scripts, or UI from any existing title.
+Dense city life
+Traffic, pedestrians, crimes, weather, transit, emergency services, faction conflicts, commerce, and rumors should all exist as interlocking loops.
+Content scalability
+Missions, NPCs, vehicles, weapons, shops, districts, and world events must be data-driven for rapid expansion.
+TARGET EXPERIENCE
+Player Fantasy
+
+The player is an ambitious underworld operator trying to rise through a fractured metropolis by:
+
+taking jobs
+stealing vehicles
+fighting rival crews
+evading increasingly aggressive law enforcement
+building influence
+unlocking safehouses and black-market services
+manipulating city systems
+profiting from risk
+Tone
+gritty but stylish
+darkly satirical
+urban, neon, industrial, decayed
+energetic, dangerous, and sly
+original setting, not parody-dependent on any existing franchise
+Camera and Presentation
+fixed-angle or slightly rotatable top-down/isometric hybrid
+high readability
+traffic and combat optimized for overhead play
+cinematic mission intros and outros optional, but gameplay-first
+GAME STRUCTURE
+Genre
+
+Top-down open-world action sandbox with:
+
+driving
+shooting
+melee
+faction reputation
+wanted system
+economy
+progression
+mission chains
+emergent events
+Modes
+single-player campaign
+free-roam sandbox
+challenge mode
+optional co-op-ready architecture, even if not enabled at launch
+Session Loop
+roam city
+encounter opportunity or threat
+acquire vehicle, weapons, intel, or cash
+complete mission or trigger emergent conflict
+survive police/faction response
+cash out, upgrade, recover, expand influence
+unlock new districts, enemies, mechanics, and tools
+WORLD DESIGN
+City Overview
+
+Create an original city called Vantown divided into 5 major zones:
+
+Old Quarter
+dense blocks, alleys, pawn shops, bars, low-level crime
+Iron Docks
+warehouses, shipping yards, smuggling routes, cranes, trains
+Glass Heights
+wealth, corporate towers, surveillance-heavy, luxury cars
+Ash Industrial
+factories, scrapyards, fuel depots, utility tunnels
+Neon Ward
+nightlife, arcades, clubs, gang territory, heavy police presence at peak hours
+
+Optional late-game zone:
+6. Outer Belt
+highways, suburbs, depots, storm drains, hidden compounds
+
+District Principles
+
+Each district must have:
+
+visual identity
+unique traffic behavior
+unique NPC demographics
+unique crime opportunities
+district-specific shops/services
+faction control scores
+heat multipliers
+signature environmental hazards
+hidden shortcuts
+discoverable side content
+Environmental Simulation
+
+The city must simulate:
+
+day/night cycle
+weather
+traffic density by time
+pedestrian density by time
+shop opening hours
+district crime intensity
+transit flows
+police patrol logic
+faction patrol territories
+emergency response routing
+Interactables
+
+World should include:
+
+vehicles
+breakable street props
+traffic lights
+fuel pumps
+vending machines
+lockboxes
+dumpsters
+doors
+shutters
+gates
+power boxes
+alarm systems
+cameras
+train crossings
+elevators
+rooftop access points
+repair shops
+ATMs
+payphones or equivalent dead-drop terminals
+black-market kiosks
+garages
+safehouses
+PLAYER SYSTEMS
+Movement
+responsive 8-direction or analog omnidirectional movement
+sprint
+roll/dive
+contextual cover-lite system
+enter/exit vehicles quickly
+climb low obstacles
+interact with doors and pickups seamlessly
+Health and Survival
+health
+armor
+temporary stimulants/adrenaline
+injury states optional
+medkits or food recovery
+vehicle collision damage
+burn, shock, poison optional if simulation depth desired
+Combat
+Weapons
+
+Original arsenal categories:
+
+fists
+bats/pipes/chains
+pistols
+revolvers
+SMGs
+shotguns
+assault rifles
+marksman weapons
+molotov-style incendiaries
+smoke devices
+EMP gadget
+throwable traps
+remote charges
+less-lethal tools
+Combat Principles
+short TTK but not unfair
+readable muzzle flashes/tracers from top-down
+crowd panic reactions
+vehicle drive-by logic
+suppression effects
+morale on low-tier NPCs
+faction-specific tactics
+ammo scarcity balancing early game
+weapon durability optional
+Vehicles
+Vehicle Types
+compact cars
+sedans
+muscle cars
+vans
+delivery trucks
+motorcycles or hover-bikes if setting allows
+taxis
+police cruisers
+armored vans
+utility vehicles
+faction-custom rides
+emergency vehicles
+hidden prototype vehicles
+Vehicle Systems
+enter/exit
+steal/hotwire
+lock states
+damage model
+tire damage
+engine health
+handling classes
+traction surfaces
+ramming damage
+cargo capacity
+police recognition of stolen flagged vehicles
+faction ownership tracking
+repair and repaint
+trunk inventory optional
+Wanted / Heat System
+
+Must be deep and systemic.
+
+Heat Levels
+No interest
+Local notice
+Active patrol pursuit
+Roadblocks and tactical units
+district lockdown, heavy units, spike tactics
+citywide manhunt, aerial surveillance equivalent, elite response
+Heat Sources
+assault
+theft
+firearm discharge
+vehicle destruction
+killing civilians
+attacking police
+trespassing high-security zones
+hacking systems
+mission-triggered investigations
+Evasion Methods
+changing vehicles
+repainting
+entering underground routes
+safehouse cool-down
+bribery/contact calls
+signal jammers
+disguises optional
+losing line of sight
+district border manipulation
+crowd blending
+NPC AND FACTION SYSTEMS
+Civilian AI
+
+Civilians need:
+
+routines
+panic states
+calling authorities
+witnessing crime
+fleeing, hiding, filming, looting, helping injured depending on archetype
+vehicle driving behavior
+social clustering
+district-appropriate appearance pools
+Police / Security AI
+
+Police must:
+
+patrol by district risk
+respond to witness reports
+investigate last known location
+pursue on foot and by vehicle
+coordinate simple flanking
+escalate tactics by heat level
+use roadblocks and tactical containment
+protect VIP zones
+deprioritize low-severity events if overloaded
+Factions
+
+Create original factions, for example:
+
+Razor Union
+dock smugglers and extortionists
+Velvet Circuit
+nightlife syndicate with hackers and club fronts
+Cinder Mob
+arson-heavy industrial saboteurs
+Blue Saints
+pseudo-vigilante neighborhood crew
+Helix Directorate
+private corporate security and covert operators
+Faction Systems
+district control
+rep score with each faction
+hostile, neutral, allied states
+dynamic retaliation
+supply lines
+faction vehicles
+faction safehouses
+faction-exclusive jobs
+faction wars
+leadership hierarchy
+outfits/colors/symbol language, all original
+MISSION DESIGN
+Mission Categories
+theft
+courier
+getaway driver
+sabotage
+protection
+surveillance
+extraction
+intimidation
+race/chase
+convoy hit
+heist-lite
+blackmail
+territory disruption
+police evidence interception
+underground fight circuit
+smuggling runs
+timed destruction
+rescue
+assassination with optional stealth
+Mission Design Rules
+missions must support multiple approaches
+fail states should be limited and readable
+police and faction response should emerge from actions
+mission spaces should exist in open world, not disconnected arenas unless necessary
+replay with score/rank optional
+collateral damage should affect payout, rep, or future hostility
+Main Campaign Structure
+
+Use a 4-act structure:
+
+Act 1: Street Entry
+learn city basics
+meet fixer network
+low-tier thefts and courier jobs
+unlock first safehouse and garage
+Act 2: Turf Pressure
+faction choice pressure
+district influence mechanics open
+stronger police units
+vehicle specialization
+first major betrayal
+Act 3: City Fracture
+faction wars ignite
+player reputation creates unique opportunities and ambushes
+corporate/private security enters citywide conflicts
+advanced tools and hidden routes unlock
+Act 4: Endgame Consolidation
+multi-stage citywide operations
+district lockdowns
+elite manhunts
+final power-play choices with multiple endings
+Side Content
+stunt challenges
+courier time trials
+vehicle theft list
+hidden caches
+high-risk bounties
+street races
+arcade mini-games
+informant hunts
+chop-shop requests
+urban legends
+procedural crimes in progress
+black market fluctuations
+ECONOMY AND PROGRESSION
+Currency
+cash
+dirty money vs cleaned funds optional
+rep tokens or influence
+contraband inventory optional
+Spend Categories
+weapons
+ammo
+armor
+vehicle repair
+repaint
+safehouse upgrades
+contacts
+bribes
+tools/gadgets
+faction fees
+cosmetic customization
+intel maps
+stash expansion
+Progression Tracks
+Character
+stamina
+recoil control
+lockpicking
+hotwiring
+intimidation
+stealth
+driving
+resilience
+black-market discounts
+Network
+fixer access
+safehouses
+mechanics
+fences
+medics
+hackers
+smugglers
+corrupt officials
+Territory / Influence
+passive district perks
+reduced heat gain
+better mission offers
+faction backup call-ins
+shop access
+hidden route intel
+SYSTEMIC EMERGENT GAMEPLAY
+
+The game must support unscripted interactions between:
+
+police
+factions
+civilians
+traffic
+weather
+hazards
+player actions
+mission states
+
+Examples:
+
+player steals a gang van during rain, crashes through market stalls, alerts civilians, triggers police response, flees into rival faction turf, causing a three-way battle
+player sabotages power in a nightlife district, disabling cameras and traffic lights, creating easier thefts but more chaotic collisions
+player frames one faction by using stolen vehicles and weapon signatures tied to another faction
+
+The design should prioritize these layered outcomes.
+
+LIVE WORLD EVENTS
+
+Generate recurring dynamic events:
+
+armored transport passing through district
+gang shootout
+warehouse fire
+police sting
+illegal street race
+political protest
+blackout
+dock shipment arrival
+VIP convoy
+informant movement
+neighborhood lockdown
+train derailment event
+toxic spill hazard zone
+
+These should:
+
+alter traffic
+affect police allocation
+create opportunities
+change district mood
+open temporary mission offers
+ART DIRECTION
+Visual Style
+
+Create an original style blending:
+
+stylized realism
+retro-urban silhouettes
+neon signage
+industrial grime
+readable exaggerated color blocking
+crisp top-down material readability
+strong nighttime lighting pools
+Camera-Driven Asset Rules
+
+Assets must be optimized for overhead readability:
+
+exaggerated silhouettes
+strong edge highlights
+directional damage states
+simplified but expressive material definition
+roof/upper-floor visibility handling
+interior cutaway logic where needed
+Environment Asset Sets
+
+Need original asset packs for:
+
+roads and intersections
+sidewalks
+curbs
+alleys
+rooftops
+industrial complexes
+docks
+train yards
+offices
+clubs
+bars
+apartments
+parking lots
+underpasses
+gas stations
+storefronts
+fences and barriers
+signage
+utility props
+trash and debris
+vegetation
+transit elements
+Character Asset Sets
+
+Need original modular NPC kits:
+
+heads
+hairstyles
+tops
+jackets
+pants
+shoes
+accessories
+faction identifiers
+emergency personnel uniforms
+security uniforms
+civilian variations by district
+Vehicle Asset Sets
+
+All vehicles must be original models, not copies of existing game vehicles.
+Need:
+
+low-poly and high-poly workflow
+damage variants
+destroyed shells
+wheel variants
+faction livery options
+police and service variants
+interior simplification for entry scenes if needed
+Weapons and Props
+
+Original designs only.
+Need:
+
+hero view assets
+world pickup assets
+icon renders
+muzzle flash variants
+impact decals
+shell casings
+thrown-device states
+AUDIO DIRECTION
+Music
+
+Original soundtrack only. No imitation of copyrighted tracks.
+Need:
+
+district ambient themes
+chase music layers
+mission tension loops
+victory/failure stingers
+nightclub diegetic tracks
+radio-like station system with original music and parody-free host banter
+SFX
+
+Need:
+
+footsteps by surface
+weapon fire layers
+ricochets
+vehicle engines by class
+crashes
+sirens
+UI signals
+crowd reactions
+alarms
+industrial ambience
+weather loops
+explosions
+fire and electricity
+Voice
+
+Optional partial VO:
+
+dispatch lines
+faction taunts
+civilian reactions
+fixer mission intros
+shopkeepers
+radio presenters
+UI / UX
+UI Goals
+readable at high speed
+minimal clutter
+retro-informed but modern polish
+controller and mouse/keyboard parity
+Required UI
+minimap
+heat meter
+health/armor
+weapon/ammo
+objective tracker
+district influence overlay
+faction reputation panel
+cash display
+garage inventory
+contact list
+mission briefing screens
+shop screens
+settings and accessibility menus
+UX Features
+remappable controls
+aim assist options
+difficulty presets
+colorblind support
+subtitle controls
+vibration toggles
+UI scale slider
+high contrast mode
+reduced flashing mode
+auto-drive accessibility optional
+TECHNICAL REQUIREMENTS
+Engine Expectations
+
+Build for a modern engine setup suitable for systemic top-down action. Prefer:
+
+Unity, Unreal, or Godot
+data-driven mission definitions
+component-based entities
+event bus for world simulation
+navmesh + traffic spline/path systems
+deterministic-enough rules for debugging
+save/load support across open world states
+Architecture
+
+Must be modular:
+
+player controller module
+vehicle module
+weapon module
+wanted/heat module
+AI behavior module
+faction system
+economy system
+mission system
+world event system
+audio manager
+UI manager
+save system
+analytics/debug tools
+Data-Driven Content
+
+Use external data definitions for:
+
+item stats
+vehicle handling
+mission templates
+faction relationships
+district metadata
+loot tables
+event frequencies
+shop inventories
+dialogue snippets
+police escalation values
+Save System
+
+Persist:
+
+player stats
+rep
+owned vehicles
+safehouses
+district influence
+active mission states
+discovered locations
+economic status
+faction hostility
+cosmetic settings
+TOOLS AND PIPELINE
+Content Pipeline
+
+Need a complete pipeline for:
+
+concept art
+blockout
+modeling
+UVs
+texturing
+materials
+rigging
+animation
+integration
+LODs
+collision
+destruction states
+icon render generation
+audio import
+localization tables
+Required Deliverables
+game design document
+technical design document
+mission bible
+faction bible
+district bible
+asset list spreadsheet
+animation list
+audio list
+UI flow diagrams
+economy tuning sheet
+vehicle handling sheet
+weapon balance sheet
+save-state schema
+localization key sheet
+QA test plan
+vertical slice scope
+milestone roadmap
+risk register
+ASSET PRODUCTION LIST
+Environment
+
+Produce original:
+
+200+ environment props
+50+ building shells
+modular road kit
+30+ signage sets
+destruction variants
+decals and grime overlays
+weather material variants
+Characters
+
+Produce original:
+
+8 core civilian archetypes
+5 faction archetype sets
+3 police/security tiers
+2 EMS/fire sets
+1 player modular kit with extensive customization
+death, panic, melee, gun, enter/exit, hit, flee, arrest, idle, phone-use animations
+Vehicles
+
+Produce original:
+
+25 to 40 vehicles
+damage states
+destroyed states
+faction reskins
+police/service versions
+tuning parts optional
+Weapons
+
+Produce original:
+
+15 to 25 weapons
+icon pack
+projectile and hit FX
+reload/fire/jam/empty states where relevant
+UI
+
+Produce original:
+
+full HUD atlas
+menu widgets
+map icons
+vendor icons
+mission banner set
+faction emblems
+heat level indicators
+Audio
+
+Produce original:
+
+1500+ SFX events target
+adaptive music suite
+UI audio pack
+dispatch VO kit
+NPC bark library
+QUALITY TARGETS
+Gameplay Quality
+controls feel immediate
+chase loops are thrilling
+missions remain readable in chaos
+AI is coherent, not omniscient
+top-down readability remains excellent at all times
+city feels alive even without player involvement
+Content Quality
+no placeholder-feeling world zones
+no copyrighted or cloned art
+no empty streets without systemic reason
+no generic faction overlap
+no repetitive mission spam without variation logic
+Technical Quality
+stable save/load
+low bug rate in mission critical paths
+strong performance with dense traffic and crowds
+scalable graphics settings
+robust debug overlays for AI, pathing, heat, faction control, and events
+SUCCESS CRITERIA
+
+The finished product should feel like:
+
+a deeply replayable top-down urban action sandbox
+instantly legible and fun in 30 seconds
+strategically rich after 30 hours
+original enough to stand as its own IP
+expandable through content packs and live updates
+suitable for a vertical slice, Kickstarter pitch, publisher deck, or indie premium launch
+DIRECT BUILD INSTRUCTION FOR VIBE CODER
+
+Use the brief above to generate:
+
+a full Game Design Document
+a Technical Design Document
+a Vertical Slice implementation plan
+a complete asset manifest
+an MVP scope and a full-production scope
+data schemas for:
+missions
+factions
+districts
+vehicles
+weapons
+shops
+world events
+a folder structure for code and content
+placeholder original art directions for all assets
+a milestone plan:
+prototype
+pre-production
+vertical slice
+alpha
+beta
+release
+all content must be original IP and must not reproduce copyrighted game assets or near-identical content
+RECOMMENDED MVP
+
+If full scope is too large, start with:
+
+1 district
+2 factions
+8 vehicles
+6 weapons
+heat system
+15 missions
+10 world events
+1 safehouse
+shops, garage, repairs
+day/night and one weather condition
+one polished 20-minute gameplay loop

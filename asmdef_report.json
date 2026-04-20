@@ -1,0 +1,63 @@
+{
+  "asmdefs": [
+    {
+      "file":"Assets/CITY#ZERO_Unity_Compile_Hardening_Pack/CITY_ZERO_Unity_Compile_Hardening_Pack/Assets/_Project/AsmDef/CityZero.Core.asmdef",
+      "name":"CityZero.Core",
+      "rootNamespace":"CityZero.Core",
+      "references": [],
+      "includePlatforms": [],
+      "autoReferenced": true,
+      "noEngineReferences": false
+    },
+    {
+      "file":"Assets/CITY#ZERO_Unity_Compile_Hardening_Pack/CITY_ZERO_Unity_Compile_Hardening_Pack/Assets/_Project/AsmDef/CityZero.Data.asmdef",
+      "name":"CityZero.Data",
+      "rootNamespace":"CityZero.Data",
+      "references": ["CityZero.Core"],
+      "includePlatforms": [],
+      "autoReferenced": true,
+      "noEngineReferences": false
+    },
+    {
+      "file":"Assets/CITY#ZERO_Unity_Compile_Hardening_Pack/CITY_ZERO_Unity_Compile_Hardening_Pack/Assets/_Project/AsmDef/CityZero.Editor.asmdef",
+      "name":"CityZero.Editor",
+      "rootNamespace":"CityZero.Editor",
+      "references": ["CityZero.Core","CityZero.Data","CityZero.Gameplay","CityZero.UI"],
+      "includePlatforms": ["Editor"],
+      "autoReferenced": true,
+      "noEngineReferences": false
+    },
+    {
+      "file":"Assets/CITY#ZERO_Unity_Compile_Hardening_Pack/CITY_ZERO_Unity_Compile_Hardening_Pack/Assets/_Project/AsmDef/CityZero.Gameplay.asmdef",
+      "name":"CityZero.Gameplay",
+      "rootNamespace":"CityZero.Gameplay",
+      "references": ["CityZero.Core","CityZero.Data"],
+      "includePlatforms": [],
+      "autoReferenced": true,
+      "noEngineReferences": false
+    },
+    {
+      "file":"Assets/CITY#ZERO_Unity_Compile_Hardening_Pack/CITY_ZERO_Unity_Compile_Hardening_Pack/Assets/_Project/AsmDef/CityZero.UI.asmdef",
+      "name":"CityZero.UI",
+      "rootNamespace":"CityZero.UI",
+      "references": ["CityZero.Core","CityZero.Data","CityZero.Gameplay","Unity.TextMeshPro"],
+      "includePlatforms": [],
+      "autoReferenced": true,
+      "noEngineReferences": false
+    }
+  ],
+  "recommendations": {
+    "unityVersion":"Unity 6 LTS",
+    "corePackages":["Input System","Cinemachine","AI Navigation","Addressables","Timeline","TextMeshPro","URP","Unity Test Framework","ProBuilder"],
+    "asmdefNotes":"CityZero.* asmdefs are structured for modular compilation. Ensure asmdef files are placed at package roots and that references match package names. CityZero.UI references TextMeshPro — confirm package installed and asmdef reference matches exact package assembly name (Unity.TextMeshPro).",
+    "editorAsmdef":"CityZero.Editor includes Editor platform in includePlatforms; ensure it remains Editor-only.",
+    "noEngineReferences":"All asmdefs have noEngineReferences=false which is appropriate for Unity runtime code. If you need pure .NET libraries, set noEngineReferences=true and manage references.",
+    "nextSteps":[
+      "Open Unity project and validate asmdef resolution in the editor (Assets -> Refresh)",
+      "Install recommended packages via Package Manager: TextMeshPro, Input System, Addressables, Cinemachine, AI Navigation, URP, Timeline, Unity Test Framework, ProBuilder.",
+      "Run Unity's Assembly Definitions validation (Editor tools) to find missing references.",
+      "If using Addressables, create AddressableGroups folder and define groupings for large asset packs.",
+      "Ensure assembly names do not conflict with other packages; consider prefixing with Company.Project if needed."
+    ]
+  }
+}

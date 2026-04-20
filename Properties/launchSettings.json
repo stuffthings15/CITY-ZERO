@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "CITY_ZERO": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

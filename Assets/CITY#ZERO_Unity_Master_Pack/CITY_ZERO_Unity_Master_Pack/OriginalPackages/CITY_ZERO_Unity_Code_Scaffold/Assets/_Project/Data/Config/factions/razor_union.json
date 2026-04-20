@@ -1,0 +1,27 @@
+{
+  "id": "razor_union",
+  "displayName": "Razor Union",
+  "archetype": "dock_smugglers_extortionists",
+  "description": "A logistics-rooted criminal organization controlling contraband flow through the waterfront.",
+  "primaryDistricts": ["iron_docks", "old_quarter"],
+  "enemyFactions": ["cinder_mob", "helix_directorate"],
+  "allyFactions": [],
+  "reputationRanges": {"hostile": -100, "neutral": 0, "friendly": 35, "trusted": 70},
+  "combatStyle": {
+    "preferredWeapons": ["smg_union9", "shotgun_cutlass", "pipe_hook"],
+    "aggression": 0.7,
+    "vehicleUse": 0.8,
+    "morale": 0.65,
+    "backupCallChance": 0.55
+  },
+  "economyHooks": {
+    "fenceDiscountAtRep": 40,
+    "smugglingJobsUnlockAtRep": 20,
+    "rareVehicleAccessAtRep": 65
+  },
+  "visualProfile": {
+    "primaryColor": "rust_red",
+    "secondaryColor": "slate",
+    "emblem": "hook_blade"
+  }
+}

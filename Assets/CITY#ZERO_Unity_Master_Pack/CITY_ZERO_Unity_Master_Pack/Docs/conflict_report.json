@@ -1,0 +1,41 @@
+{
+  "conflict_count": 6,
+  "conflicts": [
+    {
+      "package": "CITY_ZERO_Unity_Code_Scaffold",
+      "path": "README.md",
+      "existing_size": 810,
+      "new_size": 778
+    },
+    {
+      "package": "CITY_ZERO_Unity_Next_Pack",
+      "path": "README.md",
+      "existing_size": 810,
+      "new_size": 436
+    },
+    {
+      "package": "CITY_ZERO_Unity_Compile_Hardening_Pack",
+      "path": "README.md",
+      "existing_size": 810,
+      "new_size": 397
+    },
+    {
+      "package": "CITY_ZERO_Unity_Scene_and_Cleanup_Pack",
+      "path": "README.md",
+      "existing_size": 810,
+      "new_size": 464
+    },
+    {
+      "package": "CITY_ZERO_Unity_Vertical_Slice_Wiring_Pack",
+      "path": "README.md",
+      "existing_size": 810,
+      "new_size": 397
+    },
+    {
+      "package": "CITY_ZERO_Unity_Editor_Workflow_Pack",
+      "path": "README.md",
+      "existing_size": 810,
+      "new_size": 269
+    }
+  ]
+}

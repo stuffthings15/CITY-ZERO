@@ -1,0 +1,36 @@
+{
+  "project": "CITY#ZERO",
+  "targetFramework": "net10.0-windows10.0.26100.0",
+  "platforms": ["x86","x64","arm64"],
+  "assetsRoot": "Assets",
+  "detectedPackages": [
+    "CITY#ZERO_Unity_Master_Pack",
+    "CITY#ZERO_Unity_Next_Pack",
+    "CITY#ZERO_Unity_Code_Scaffold",
+    "CITY#ZERO_Unity_Compile_Hardening_Pack",
+    "CITY#ZERO_Unity_UIUX_Pack",
+    "CITY#ZERO_Unity_Audio_Pack",
+    "CITY#ZERO_Unity_Editor_Workflow_Pack",
+    "CITY#ZERO_Unity_Scene_and_Cleanup_Pack",
+    "CITY#ZERO_Unity_Vertical_Slice_Wiring_Pack"
+  ],
+  "documents": [
+    "Assets/CITY#ZERO Master Prompt.txt",
+    "Assets/CITY#ZERO Project.txt",
+    "Assets/CITY#ZERO UNITY.txt"
+  ],
+  "assetsSample": [
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Code/Gameplay/AI/AIAgentBase.cs",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Code/Gameplay/Missions/MissionManager.cs",
+    "Assets/CITY#ZERO_Unity_Code_Scaffold/.../Data/ScriptableObjects/VehicleConfig.cs",
+    "Assets/CITY#ZERO_Unity_Audio_Pack/.../Scripts/Audio/SoundManager.cs",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Docs/CompileCleanup/COMPILE_CLEANUP_CHECKLIST.md",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Code/Core/Bootstrap/GameBootstrap.cs",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Code/Gameplay/Traffic/TrafficVehicleAgent.cs",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Code/Gameplay/Player/PlayerController.cs",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Code/Gameplay/Heat/HeatSystem.cs",
+    "Assets/CITY#ZERO_Unity_Master_Pack/.../Data/RuntimeDTOs/VehicleData.cs"
+  ],
+  "notes": "This manifest was generated automatically. Use it as a starting point. For full manifest include, request recursive file list and optional SHA256 hashes.",
+  "generatedAt": "2026-04-20T00:00:00Z"
+}
