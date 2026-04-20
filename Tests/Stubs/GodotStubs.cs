@@ -100,24 +100,24 @@ namespace Godot
     public static class DirAccess
     {
         public static void MakeDirRecursiveAbsolute(string path)
-            => System.IO.Directory.CreateDirectory(
-                path.Replace("user://", System.IO.Path.Combine(
-                    System.IO.Path.GetTempPath(), "cityzero_test") + "/"));
+            => System.IO.Directory.CreateDirectory(MapPath(path));
 
         public static bool RemoveAbsolute(string path)
-        { try { System.IO.File.Delete(path); return true; } catch { return false; } }
+        { try { System.IO.File.Delete(MapPath(path)); return true; } catch { return false; } }
 
         public static bool RenameAbsolute(string from, string to)
-        { try { System.IO.File.Move(from, to); return true; } catch { return false; } }
+        { try { System.IO.File.Move(MapPath(from), MapPath(to)); return true; } catch { return false; } }
 
-        public static DirAccessHandle? Open(string path) =>
-            System.IO.Directory.Exists(
-                path.Replace("res://", "./").Replace("user://",
-                System.IO.Path.Combine(System.IO.Path.GetTempPath(), "cityzero_test") + "/"))
-                ? new DirAccessHandle(
-                    path.Replace("res://", "./").Replace("user://",
-                    System.IO.Path.Combine(System.IO.Path.GetTempPath(), "cityzero_test") + "/"))
-                : null;
+        public static DirAccessHandle? Open(string path)
+        {
+            string real = MapPath(path);
+            return System.IO.Directory.Exists(real) ? new DirAccessHandle(real) : null;
+        }
+
+        private static string MapPath(string path)
+            => path.Replace("user://", System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(), "cityzero_test") + "/")
+                   .Replace("res://", "./");
     }
 
     public class DirAccessHandle : IDisposable
