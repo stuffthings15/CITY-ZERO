@@ -129,10 +129,12 @@
   <ItemGroup>
     <Content Remove="Assets\CITY#ZERO_Unity_Master_Pack\CITY_ZERO_Unity_Master_Pack\MergedProject\Assets\_Project\Code\Gameplay\Inventory\InventoryDebugger.cs" />
     <Content Remove="Assets\CITY#ZERO_Unity_Master_Pack\CITY_ZERO_Unity_Master_Pack\MergedProject\Assets\_Project\Code\Gameplay\Inventory\SimpleInventory.cs" />
+    <Content Remove="Assets\Editor\BuildScript.cs" />
     <Content Remove="Assets\_Project\Scenes\DEMO_INVENTORY_README.md" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".github\README_SECRETS.md" />
     <None Include=".github\workflows\dotnet-build.yml" />
     <None Include=".github\workflows\unity-ci.yml" />
     <None Include="Tests\SimpleInventory.Tests\SimpleInventory.Tests.csproj" />
