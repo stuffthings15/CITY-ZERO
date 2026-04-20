@@ -27,6 +27,12 @@ namespace CityZero.Systems
 
         public bool SaveGame(int slot, SaveData data)
         {
+            if (data == null)
+            {
+                GD.PrintErr("[SaveSystem] SaveGame called with null data.");
+                return false;
+            }
+
             string path = GetSlotPath(slot);
             string tmpPath = path + ".tmp";
 

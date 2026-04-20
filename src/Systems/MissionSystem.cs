@@ -70,8 +70,13 @@ namespace CityZero.Systems
         }
 
         public bool IsMissionCompleted(string missionId) => _completedMissions.Contains(missionId);
-        public bool IsMissionFailed(string missionId) => _failedMissions.Contains(missionId);
-        public bool IsMissionActive(string missionId) => _activeMissions.ContainsKey(missionId);
+        public bool IsMissionFailed(string missionId)    => _failedMissions.Contains(missionId);
+        public bool IsMissionActive(string missionId)    => _activeMissions.ContainsKey(missionId);
+        public int  ActiveCount                          => _activeMissions.Count;
+
+        /// <summary>Returns the live MissionInstance (for tests and objective reporting).</summary>
+        public bool TryGetActive(string missionId, out MissionInstance instance)
+            => _activeMissions.TryGetValue(missionId, out instance);
 
         // ── Event Handlers ────────────────────────────────────────────────────────
 
@@ -136,17 +141,47 @@ namespace CityZero.Systems
             MissionId = missionId;
         }
 
+        /// <summary>
+        /// Registers a required objective. Call this when populating from a MissionDefinition.
+        /// </summary>
+        public void AddObjective(string objectiveId, bool isOptional = false)
+        {
+            if (!isOptional)
+                _requiredObjectives.Add(objectiveId);
+            _optionalObjectives[objectiveId] = isOptional;
+        }
+
+        /// <summary>
+        /// Marks an objective as complete. Fires events and resolves the mission if all required
+        /// objectives are now done.
+        /// </summary>
+        public void CompleteObjective(string objectiveId)
+        {
+            if (_completedObjectives.Contains(objectiveId)) return;
+
+            bool isOptional = _optionalObjectives.TryGetValue(objectiveId, out var opt) && opt;
+            _completedObjectives.Add(objectiveId);
+            OnObjectiveCompleted?.Invoke(MissionId, objectiveId, isOptional);
+            CheckAllRequired();
+        }
+
         /// <summary>Evaluates an incoming game event against all pending objectives.</summary>
         public void EvaluateEvent(string eventType, string targetId, object payload)
         {
-            // TODO: Match against objective definitions loaded from MissionDefinition
-            // Stub: simulate objective completion for testing
+            // TODO: Match against objective definitions loaded from MissionDefinition.
+            // For now, if the eventType == objectiveId, treat it as completion.
+            CompleteObjective(eventType);
         }
+
+        // ── Private ───────────────────────────────────────────────────────────────
+
+        private readonly Dictionary<string, bool> _optionalObjectives = new();
 
         private void CheckAllRequired()
         {
-            bool allDone = _requiredObjectives.All(o => _completedObjectives.Contains(o));
-            if (allDone && _requiredObjectives.Count > 0)
+            bool allDone = _requiredObjectives.Count > 0 &&
+                           _requiredObjectives.All(o => _completedObjectives.Contains(o));
+            if (allDone)
                 OnMissionResolved?.Invoke(MissionId, true);
         }
     }
