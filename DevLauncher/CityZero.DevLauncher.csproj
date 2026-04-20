@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>CityZero.DevLauncher</AssemblyName>
+    <RootNamespace>CityZero.DevLauncher</RootNamespace>
+    <!-- Press F5 and it just runs — no MSIX packaging, no cert, no deploy step -->
+    <StartupObject>CityZero.DevLauncher.Program</StartupObject>
+  </PropertyGroup>
+
+  <!-- Stubs replace the Godot engine surface so game systems compile here too -->
+  <ItemGroup>
+    <Compile Include="..\tests\Stubs\GodotStubs.cs" Link="Stubs\GodotStubs.cs" />
+  </ItemGroup>
+
+  <!-- Game source — same files the test project uses -->
+  <ItemGroup>
+    <Compile Include="..\src\Core\GameBus.cs"                     Link="src\Core\GameBus.cs"                     />
+    <Compile Include="..\src\Core\ServiceLocator.cs"              Link="src\Core\ServiceLocator.cs"              />
+    <Compile Include="..\src\Core\Events\GameEvents.cs"           Link="src\Core\Events\GameEvents.cs"           />
+    <Compile Include="..\src\Systems\HeatSystem.cs"               Link="src\Systems\HeatSystem.cs"               />
+    <Compile Include="..\src\Systems\EconomySystem.cs"            Link="src\Systems\EconomySystem.cs"            />
+    <Compile Include="..\src\Systems\FactionSystem.cs"            Link="src\Systems\FactionSystem.cs"            />
+    <Compile Include="..\src\Systems\MissionSystem.cs"            Link="src\Systems\MissionSystem.cs"            />
+    <Compile Include="..\src\Systems\SaveSystem.cs"               Link="src\Systems\SaveSystem.cs"               />
+    <Compile Include="..\src\Systems\TimeManager.cs"              Link="src\Systems\TimeManager.cs"              />
+    <Compile Include="..\src\AI\BehaviorTree\BehaviorTree.cs"     Link="src\AI\BehaviorTree\BehaviorTree.cs"     />
+    <Compile Include="..\src\Data\DataRegistry.cs"                Link="src\Data\DataRegistry.cs"                />
+    <Compile Include="..\src\Data\Definitions\AllDefinitions.cs"  Link="src\Data\Definitions\AllDefinitions.cs"  />
+  </ItemGroup>
+
+  <!-- Launcher-only sources (Program.cs, DevConsoleForm.cs, *.Designer.cs, *.resx)
+       are picked up automatically by the SDK from this directory. -->
+</Project>

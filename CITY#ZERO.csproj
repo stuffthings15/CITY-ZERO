@@ -143,8 +143,10 @@
     <None Include=".github\README_SECRETS.md" />
     <None Include=".github\workflows\dotnet-build.yml" />
     <None Include=".github\workflows\godot-ci.yml" />
+    <None Include="CITY#ZERO.slnx" />
     <None Include="CityZero.Game.csproj" />
     <None Include="CityZero.Tests.csproj" />
+    <None Include="DevLauncher\CityZero.DevLauncher.csproj" />
     <None Include="Tests\HeatModel.Tests\HeatModel.Tests.csproj" />
     <None Include="Tests\SimpleInventory.Tests\SimpleInventory.Tests.csproj" />
   </ItemGroup>
