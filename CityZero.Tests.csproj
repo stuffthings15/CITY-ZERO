@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>CityZero.Tests</RootNamespace>
+    <AssemblyName>CityZero.Tests</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <!-- Disable SDK globbing so we control exactly what compiles -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit"                   Version="2.9.3"  />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="FluentAssertions"        Version="6.12.2" />
+  </ItemGroup>
+
+  <!-- Stub Godot types so game logic is testable without a running engine -->
+  <ItemGroup>
+    <Compile Include="tests\Stubs\GodotStubs.cs" />
+    <Compile Include="tests\unit\*.cs" />
+  </ItemGroup>
+
+  <!-- Include game source directly (not via ProjectReference — avoids Godot SDK requirement) -->
+  <ItemGroup>
+    <Compile Include="src\Core\GameBus.cs"                     />
+    <Compile Include="src\Core\ServiceLocator.cs"              />
+    <Compile Include="src\Core\Events\GameEvents.cs"           />
+    <Compile Include="src\Systems\HeatSystem.cs"               />
+    <Compile Include="src\Systems\EconomySystem.cs"            />
+    <Compile Include="src\Systems\FactionSystem.cs"            />
+    <Compile Include="src\Systems\MissionSystem.cs"            />
+    <Compile Include="src\Systems\SaveSystem.cs"               />
+    <Compile Include="src\Systems\TimeManager.cs"              />
+    <Compile Include="src\AI\BehaviorTree\BehaviorTree.cs"     />
+    <Compile Include="src\Data\DataRegistry.cs"                />
+    <Compile Include="src\Data\Definitions\AllDefinitions.cs"  />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,29 @@
+{
+  "district_id": "the_pits",
+  "display_name": "The Pits",
+  "controlling_faction": "ruin_syndicate",
+  "color_palette": {
+    "primary": "#7A5C3A",
+    "accent": "#FF6600",
+    "shadow": "#1C1C1C"
+  },
+  "ambient_audio_id": "amb_district_pits_night",
+  "population_density": {
+    "day_foot": 0.6,
+    "day_vehicle": 0.3,
+    "night_foot": 0.8,
+    "night_vehicle": 0.5
+  },
+  "police_presence": {
+    "patrol_cars": 2,
+    "foot_units": 0,
+    "response_time_multiplier": 1.8
+  },
+  "heat_escalation_modifier": 0.85,
+  "cctv_coverage": 0.20,
+  "shop_ids": ["shop_general_pits", "shop_syndicate_weapons", "chopshop_pits_main"],
+  "spawn_points": ["spawn_pits_north", "spawn_pits_south", "spawn_rail_depot"],
+  "unlock_condition": null,
+  "gameplay_traits": ["tight_streets", "low_visibility_alleys", "faction_hotzone"],
+  "weather_modifiers": { "fog_frequency_multiplier": 1.4 }
+}

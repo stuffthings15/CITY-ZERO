@@ -1,0 +1,31 @@
+{
+  "heat_levels": {
+    "0": { "name": "Clean",    "description": "No wanted status. Normal world behavior." },
+    "1": { "name": "Noticed",  "description": "Single patrol unit dispatched." },
+    "2": { "name": "Flagged",  "description": "2 cars + foot units. Active pursuit if spotted." },
+    "3": { "name": "Pursuit",  "description": "4 cars + helicopter. PIT maneuvers." },
+    "4": { "name": "Manhunt",  "description": "Roadblocks + SWAT. Spike strips placed." },
+    "5": { "name": "Lockdown", "description": "All assets mobilized. City-wide alert." }
+  },
+  "cooldown_delays_sec": [0, 15, 30, 45, 60, 90],
+  "decay_rate_per_sec": 0.5,
+  "heat_sources": {
+    "shoot_in_public_per_3sec":       1.0,
+    "crime_witnessed_by_civilian":    0.5,
+    "crime_witnessed_by_police":      1.0,
+    "police_unit_destroyed":          1.0,
+    "vehicle_theft_witnessed":        1.0,
+    "carjack_civilian":               1.0,
+    "carjack_police":                 2.0,
+    "high_value_target_attacked":     2.0,
+    "cctv_capture_delay_sec":         45
+  },
+  "reduction_sources": {
+    "safehouse_entry":                5.0,
+    "bribe_cost_per_level":           [500, 1000, 2000, 4000, 8000],
+    "signal_jammer_duration_sec":     60,
+    "signal_jammer_escalation_mod":   0.25,
+    "clothing_change_reduction":      1.0,
+    "vehicle_swap_removes_flag":      true
+  }
+}

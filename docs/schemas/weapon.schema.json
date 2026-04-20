@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WeaponDefinition",
+  "type": "object",
+  "required": ["weapon_id", "display_name", "category", "stats", "ammo_type", "model_path"],
+  "properties": {
+    "weapon_id": { "type": "string", "pattern": "^weapon_[a-z0-9_]+$" },
+    "display_name": { "type": "string" },
+    "category": {
+      "type": "string",
+      "enum": ["pistol", "smg", "shotgun", "assault_rifle", "marksman_rifle", "sniper_rifle", "heavy_mg", "rocket", "energy", "utility"]
+    },
+    "stats": {
+      "type": "object",
+      "required": ["damage_per_bullet", "fire_rate_rpm", "magazine_size", "max_reserve_ammo", "reload_time_sec", "effective_range_m"],
+      "properties": {
+        "damage_per_bullet": { "type": "number", "minimum": 0 },
+        "fire_rate_rpm": { "type": "number", "minimum": 0 },
+        "magazine_size": { "type": "integer", "minimum": 1 },
+        "max_reserve_ammo": { "type": "integer", "minimum": 0 },
+        "reload_time_sec": { "type": "number", "minimum": 0 },
+        "effective_range_m": { "type": "number", "minimum": 0 },
+        "falloff_start_m": { "type": "number" },
+        "falloff_end_m": { "type": "number" },
+        "recoil_horizontal": { "type": "number", "minimum": 0 },
+        "recoil_vertical": { "type": "number", "minimum": 0 },
+        "aim_cone_degrees": { "type": "number", "minimum": 0 },
+        "aim_cone_sprint_modifier": { "type": "number", "minimum": 1 }
+      }
+    },
+    "fire_modes": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["single", "burst", "auto"] },
+      "minItems": 1
+    },
+    "ammo_type": { "type": "string" },
+    "concealable": { "type": "boolean" },
+    "heat_modifier_per_shot": { "type": "number", "minimum": 0 },
+    "can_suppress": { "type": "boolean" },
+    "suppressor_slot": { "type": "boolean" },
+    "upgrades": { "type": "array", "items": { "type": "string" } },
+    "price_shop": { "type": ["integer", "null"] },
+    "unlock_condition": { "type": ["string", "null"] },
+    "audio_shot_id": { "type": "string" },
+    "model_path": { "type": "string" }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "mission_id": "mission_cold_iron",
+  "title": "Cold Iron",
+  "archetype": "heist",
+  "giver_faction": "ruin_syndicate",
+  "giver_npc_id": "npc_dame_oskar",
+  "prerequisites": {
+    "faction_rep_min": { "ruin_syndicate": 10 },
+    "missions_completed": [],
+    "story_flag": null
+  },
+  "location": {
+    "district": "the_pits",
+    "spawn_point": "spawn_rail_depot",
+    "area_id": "area_vektro_rail"
+  },
+  "time_limit_seconds": 480,
+  "heat_modifier_base": 1.0,
+  "objectives": [
+    {
+      "id": "obj_intercept_train",
+      "type": "reach",
+      "target": "area_signal_box",
+      "label": "Reach the signal box before the train departs",
+      "required": true,
+      "bonus_cash": 0
+    },
+    {
+      "id": "obj_board_train",
+      "type": "reach",
+      "target": "area_train_car_4",
+      "label": "Board the cargo train",
+      "required": true,
+      "bonus_cash": 0
+    },
+    {
+      "id": "obj_secure_crate",
+      "type": "interact",
+      "target": "prop_biometric_crate",
+      "label": "Secure the weapon crate",
+      "required": true,
+      "bonus_cash": 0
+    },
+    {
+      "id": "obj_extract",
+      "type": "deliver",
+      "target": "npc_syndicate_van",
+      "label": "Deliver the crate to the Syndicate van",
+      "required": true,
+      "bonus_cash": 0
+    },
+    {
+      "id": "obj_bonus_tracker",
+      "type": "interact",
+      "target": "prop_train_chassis",
+      "label": "Plant a tracker on the train",
+      "required": false,
+      "bonus_cash": 500
+    }
+  ],
+  "success_conditions": {
+    "all_required_objectives": true
+  },
+  "failure_conditions": [
+    { "type": "area_exit", "area": "area_waterfront_cartel", "payload_held": true },
+    { "type": "player_death" }
+  ],
+  "rewards": {
+    "cash": 3200,
+    "reputation": [
+      { "faction": "ruin_syndicate", "delta": 15 },
+      { "faction": "meridian_cartel", "delta": -10 }
+    ],
+    "unlock_flags": ["service_chopshop_discount"],
+    "items": []
+  }
+}

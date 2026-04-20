@@ -1,0 +1,30 @@
+{
+  "weapon_id": "weapon_voss9_smg",
+  "display_name": "VOSS-9",
+  "category": "smg",
+  "stats": {
+    "damage_per_bullet": 18,
+    "fire_rate_rpm": 720,
+    "magazine_size": 32,
+    "max_reserve_ammo": 160,
+    "reload_time_sec": 2.1,
+    "effective_range_m": 15,
+    "falloff_start_m": 12,
+    "falloff_end_m": 25,
+    "recoil_horizontal": 0.08,
+    "recoil_vertical": 0.12,
+    "aim_cone_degrees": 4.0,
+    "aim_cone_sprint_modifier": 2.0
+  },
+  "fire_modes": ["auto"],
+  "ammo_type": "ammo_9mm",
+  "concealable": true,
+  "heat_modifier_per_shot": 0.02,
+  "can_suppress": true,
+  "suppressor_slot": true,
+  "upgrades": ["upgrade_extended_mag", "upgrade_suppressor", "upgrade_laser_dot"],
+  "price_shop": 1800,
+  "unlock_condition": null,
+  "audio_shot_id": "snd_weapon_voss9_shot_close",
+  "model_path": "res://assets/weapons/voss9/weapon_voss9.tscn"
+}

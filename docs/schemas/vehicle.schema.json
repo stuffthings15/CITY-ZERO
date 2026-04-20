@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VehicleDefinition",
+  "type": "object",
+  "required": ["vehicle_id", "display_name", "class", "stats", "damage_zones", "seats", "model_path"],
+  "properties": {
+    "vehicle_id": { "type": "string", "pattern": "^vehicle_[a-z0-9_]+$" },
+    "display_name": { "type": "string" },
+    "class": {
+      "type": "string",
+      "enum": ["compact", "sedan", "muscle", "suv", "sports", "van", "motorcycle", "emergency", "military", "watercraft", "commercial"]
+    },
+    "faction_affiliation": { "type": ["string", "null"] },
+    "stats": {
+      "type": "object",
+      "required": ["top_speed_kmh", "acceleration", "braking", "handling", "durability_hp", "weight_class", "drive_type"],
+      "properties": {
+        "top_speed_kmh": { "type": "number", "minimum": 0 },
+        "acceleration": { "type": "number", "minimum": 0, "maximum": 1 },
+        "braking": { "type": "number", "minimum": 0, "maximum": 1 },
+        "handling": { "type": "number", "minimum": 0, "maximum": 1 },
+        "durability_hp": { "type": "integer", "minimum": 1 },
+        "weight_class": { "type": "string", "enum": ["very_light", "light", "medium", "heavy", "very_heavy"] },
+        "drive_type": { "type": "string", "enum": ["front_wheel", "rear_wheel", "all_wheel"] }
+      }
+    },
+    "damage_zones": {
+      "type": "object",
+      "properties": {
+        "front": { "$ref": "#/definitions/damage_zone" },
+        "engine": { "$ref": "#/definitions/damage_zone" },
+        "tires": { "$ref": "#/definitions/damage_zone" },
+        "fuel_tank": { "$ref": "#/definitions/damage_zone" }
+      }
+    },
+    "traction_modifiers": {
+      "type": "object",
+      "properties": {
+        "wet": { "type": "number" },
+        "gravel": { "type": "number" },
+        "ice": { "type": "number" }
+      }
+    },
+    "seats": { "type": "integer", "minimum": 1 },
+    "can_be_stolen": { "type": "boolean" },
+    "spawn_districts": { "type": "array", "items": { "type": "string" } },
+    "spawn_weight": { "type": "integer", "minimum": 0 },
+    "price_shop": { "type": ["integer", "null"] },
+    "unlock_condition": { "type": ["string", "null"] },
+    "audio_engine_id": { "type": "string" },
+    "model_path": { "type": "string" }
+  },
+  "definitions": {
+    "damage_zone": {
+      "type": "object",
+      "required": ["hp", "effect_on_deplete"],
+      "properties": {
+        "hp": { "type": "integer", "minimum": 1 },
+        "effect_on_deplete": { "type": "string" }
+      }
+    }
+  }
+}

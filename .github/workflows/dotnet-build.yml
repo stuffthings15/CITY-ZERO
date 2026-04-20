@@ -1,38 +1,66 @@
-name: CI - Build
+name: CITY//ZERO — .NET Build & Test
+
+# Builds the game C# project and runs all unit tests.
+# No Godot engine required — tests use GodotStubs.cs.
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, develop ]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-test:
+    name: Build + Test (.NET ${{ matrix.dotnet }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        dotnet: [ "10.0.x" ]
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: Setup .NET ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
 
-    - name: Restore
-      run: dotnet restore "CITY#ZERO.csproj"
+      # ── Game project ──────────────────────────────────────────────────────────
+      # CityZero.Game.csproj uses Godot.NET.Sdk — restore to verify dependency graph
+      - name: Restore game project
+        run: dotnet restore CityZero.Game.csproj
 
-    - name: Build
-      run: dotnet build "CITY#ZERO.csproj" --configuration Release --no-restore
+      # ── Test project ──────────────────────────────────────────────────────────
+      - name: Restore test project
+        run: dotnet restore CityZero.Tests.csproj
 
-    - name: Run tests (if any)
-      run: |
-        if (Test-Path "./Tests") { dotnet test ./Tests --verbosity normal }
-      shell: pwsh
+      - name: Build test project
+        run: dotnet build CityZero.Tests.csproj --configuration Release --no-restore
 
-    - name: Upload inventory.json
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: inventory
-        path: inventory.json
+      - name: Run unit tests
+        run: >
+          dotnet test CityZero.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=results-${{ matrix.os }}.trx"
+          --verbosity normal
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: "**/*.trx"
+
+      # ── Data validation ───────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate JSON data
+        run: |
+          pip install jsonschema --quiet
+          python scripts/validate_data.py

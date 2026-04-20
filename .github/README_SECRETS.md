@@ -1,24 +1,42 @@
-Setting GitHub Actions secrets for Unity CI
+# CITY//ZERO — GitHub Actions Secrets
 
-The unity-ci workflow requires Unity activation credentials. You must set these as repository secrets before the workflow will run successfully.
+## No Secrets Required for Core CI
 
-Required secrets (example names used in .github/workflows/unity-ci.yml):
-- UNITY_EMAIL
-- UNITY_PASSWORD
-- UNITY_SERIAL
+CITY//ZERO uses **Godot 4** (open-source, no license activation) and **xUnit** for testing.  
+The CI workflows in `.github/workflows/` require **zero repository secrets** to run.
 
-Optional environment variable to set in GitHub Actions secrets or repository variables:
-- UNITY_VERSION (e.g., "6.0.0f1")
+---
 
-Set secrets using GitHub CLI (locally) or via the repository Settings -> Secrets & variables -> Actions -> New repository secret UI.
+## Workflows Summary
 
-GitHub CLI example:
-- gh secret set UNITY_EMAIL -b "you@example.com"
-- gh secret set UNITY_PASSWORD -b "<password>"
-- gh secret set UNITY_SERIAL -b "<serial>"
-- gh secret set UNITY_VERSION -b "6.0.0f1"
+| Workflow | File | Triggers | Secrets Needed |
+|----------|------|----------|----------------|
+| .NET Build & Test | `dotnet-build.yml` | push/PR to main, develop | None |
+| Godot CI | `godot-ci.yml` | push/PR to main, develop | None |
 
-Notes:
-- For automated CI, using a license file (unity-builder supports license file activation) is often more stable than storing passwords.
-- Do not commit secrets to the repository.
-- If you prefer to run Unity CI with a build agent that has a pre-activated license, you may omit these secrets and adjust the workflow accordingly.
+---
+
+## Optional: Deployment Secrets
+
+If you add automated deployment to itch.io or Steam, set these:
+
+```
+ITCHIO_API_KEY     — itch.io Butler API key (for itch.io deploy)
+STEAM_USERNAME     — Steam partner account (for Steamworks deploy)
+STEAM_CONFIG_VDF   — Base64-encoded Steam config.vdf (for Steamworks deploy)
+```
+
+Set secrets via:
+```bash
+gh secret set ITCHIO_API_KEY -b "<your_key>"
+```
+
+Or via **Settings → Secrets & variables → Actions → New repository secret**.
+
+---
+
+## No Unity Secrets
+
+The old `unity-ci.yml` (UNITY_EMAIL, UNITY_PASSWORD, UNITY_SERIAL) has been replaced  
+by `godot-ci.yml`. Unity is no longer the engine for this project.
+
