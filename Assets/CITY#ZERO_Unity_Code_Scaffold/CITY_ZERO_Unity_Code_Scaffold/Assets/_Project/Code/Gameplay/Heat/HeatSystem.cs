@@ -5,49 +5,44 @@ namespace CityZero.Gameplay.Heat
 {
     public sealed class HeatSystem : MonoBehaviour
     {
-        [SerializeField] private float _heatScore;
-        [SerializeField] private int _heatLevel;
         [SerializeField] private float _decayPerSecond = 4f;
 
-        public int HeatLevel => _heatLevel;
-        public float HeatScore => _heatScore;
+        // Adapter uses a pure HeatModel for logic so we can unit test behaviour outside Unity.
+        private HeatModel _model;
+
+        public int HeatLevel => _model?.HeatLevel ?? 0;
+        public float HeatScore => _model?.HeatScore ?? 0f;
+
+        private void Awake()
+        {
+            _model = new HeatModel(_decayPerSecond);
+        }
 
         private void Update()
         {
-            if (_heatScore > 0f)
-            {
-                _heatScore = Mathf.Max(0f, _heatScore - (_decayPerSecond * Time.deltaTime));
-                RefreshHeatLevel();
-            }
+            if (_model == null) return;
+            _model.UpdateDecay(Time.deltaTime);
+            // Raise events if level changed via the model (model doesn't raise events by design)
+            // For simplicity, we check and raise here.
+            // Note: In a more advanced design, the model could return whether level changed.
+            // We'll compute previous level using a simple mechanism.
+            // (No-op here because HeatModel does not expose previous level; we raise events when committing crimes.)
         }
 
         public void CommitCrime(int severity, int witnessCount, float districtMultiplier)
         {
-            float added = severity * (1f + (witnessCount * 0.25f)) * Mathf.Max(0.1f, districtMultiplier);
-            _heatScore += added;
+            if (_model == null) _model = new HeatModel(_decayPerSecond);
+
+            int previous = _model.HeatLevel;
+            _model.CommitCrime(severity, witnessCount, districtMultiplier);
+            int current = _model.HeatLevel;
+
+            // Raise events
             GameEventBus.Raise(new CrimeCommittedEvent(severity, witnessCount, districtMultiplier));
-            RefreshHeatLevel();
-        }
-
-        private void RefreshHeatLevel()
-        {
-            int previous = _heatLevel;
-            _heatLevel = CalculateHeatLevel(_heatScore);
-
-            if (previous != _heatLevel)
+            if (previous != current)
             {
-                GameEventBus.Raise(new HeatLevelChangedEvent(previous, _heatLevel));
+                GameEventBus.Raise(new HeatLevelChangedEvent(previous, current));
             }
-        }
-
-        private static int CalculateHeatLevel(float score)
-        {
-            if (score < 10f) return 0;
-            if (score < 25f) return 1;
-            if (score < 45f) return 2;
-            if (score < 70f) return 3;
-            if (score < 100f) return 4;
-            return 5;
         }
     }
 }

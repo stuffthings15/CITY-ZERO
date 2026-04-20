@@ -1,32 +1,99 @@
-CITY#ZERO — Project README
-==========================
+# CITY//ZERO
 
-Overview
---------
-CITY//ZERO is a data-driven top-down open-world action sandbox. This workspace contains a small WinUI host project and a large Assets directory with Unity-ready code packages and design documents.
+> **Top-down open-world crime-action sandbox** | Original IP | Godot 4 + .NET 10
 
-Quick facts
------------
-- Project: CITY#ZERO
-- Target Framework: net10.0-windows10.0.26100.0
-- Main assets: Assets/ (Unity packages, code scaffold, audio, UI, docs)
-- Important docs: Assets/CITY#ZERO Master Prompt.txt, Assets/CITY#ZERO Project.txt, Assets/CITY#ZERO UNITY.txt
+---
 
-What I did in this session
--------------------------
-1. Read and analyzed three core design documents in Assets/.
-2. Generated inventory.json summarizing detected asset packages and sample file paths.
-3. Embedded README/JSON content previously in CITY#ZERO.csproj as comments.
-4. Prepared a high-level plan and next steps (below).
+## What Is CITY//ZERO?
 
-Plan (work batches)
---------------------
-Batch 1 — Discovery and inventory (this session):
-- Read design docs, list key packages and files.
-- Create inventory.json and README.md.
+CITY//ZERO is a systemic top-down open-world crime-action game set in **Vektor**, a fictional coastal mega-city fractured between five warring factions. You play as **Kael Rison** — a former military logistics specialist turned criminal operator who returns to a city tearing itself apart.
 
-Batch 2 — Repo hygiene and CI:
-- Add .gitignore, CONTRIBUTING.md, and basic GitHub Actions workflow to build the WinUI project.
+This repository contains the **complete production package**: game design, technical architecture, art direction, content pipeline, roadmap, QA plan, risk analysis, and implementation-ready source code.
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [`docs/GDD.md`](docs/GDD.md) | Full Game Design Document — all systems, factions, 10 missions |
+| [`docs/TDD.md`](docs/TDD.md) | Technical Design Document — architecture, data schemas, AI, performance |
+| [`docs/ART_PLAN.md`](docs/ART_PLAN.md) | Art Direction + 200+ asset list + vehicle/weapon design catalog |
+| [`docs/CONTENT_PIPELINE.md`](docs/CONTENT_PIPELINE.md) | Modeling, texturing, rigging, integration, naming conventions |
+| [`docs/SCOPE_PLAN.md`](docs/SCOPE_PLAN.md) | MVP Vertical Slice + Full Game scope targets |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | 6-phase development roadmap with deliverables per phase |
+| [`docs/QA_PLAN.md`](docs/QA_PLAN.md) | Bug categories, test methodology, edge cases, stress tests |
+| [`docs/RISK_ANALYSIS.md`](docs/RISK_ANALYSIS.md) | Technical, scope, design, and production risk register |
+| [`docs/FOLDER_STRUCTURE.md`](docs/FOLDER_STRUCTURE.md) | Full production folder tree |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Engine | **Godot 4.x** |
+| Gameplay logic | **C# / .NET 10** |
+| Scripting / UI | **GDScript** |
+| Data format | **JSON** (schema-validated) |
+| Version control | **Git + Git LFS** |
+| Testing | **GdUnit4** |
+| CI | **GitHub Actions** |
+
+---
+
+## Repository Structure
+
+```
+CITY#ZERO/
+├── src/          ← C# source (Core, Player, Vehicle, AI, Systems, UI, Data)
+├── scenes/       ← Godot .tscn scene files
+├── assets/       ← 3D models, textures, fonts, UI graphics
+├── audio/        ← Music, SFX, ambient, voice over
+├── data/         ← JSON data (missions, vehicles, weapons, factions, districts)
+├── docs/         ← All production documentation
+├── scripts/      ← Build + validation utility scripts
+└── tests/        ← Automated tests (GdUnit4)
+```
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/stuffthings15/CITY-ZERO.git && cd CITY-ZERO
+
+# Validate data files
+pip install jsonschema && python scripts/validate_data.py
+
+# Open project.godot in Godot 4.3+, then Build → Build Solution
+```
+
+---
+
+## Core Design Pillars
+
+| Pillar | Description |
+|--------|-------------|
+| Top-down readability | Every asset reads clearly from above |
+| Systemic emergence | 10+ interacting systems; unscripted scenarios |
+| Arcade feel, deep simulation | Fast to pick up; rewards mastery |
+| Living city | Factions, economy, weather evolve independently |
+| Original IP | All content is wholly original |
+| Data-driven | All entities in JSON; zero hardcoded gameplay values |
+
+---
+
+## Faction Overview
+
+| Faction | Territory | Tone | Leader |
+|---------|-----------|------|--------|
+| Ruin Syndicate | The Pits | Angry working class | Dame Oskar |
+| Warden Bloc | The Grid | Corporate authoritarian | Cmdr. Strak |
+| Hollow Kings | Neon Flats | Anarchist hackers | The Seven Seats |
+| Meridian Cartel | The Waterfront | Pragmatic capitalists | Tres Morande |
+| Axiom Directorate | The Spire | Shadow government | Director Vale |
 
 Batch 3 — Data manifest and hash generation:
 - Produce a full recursive inventory (JSON) with file sizes and SHA256 hashes for verification.

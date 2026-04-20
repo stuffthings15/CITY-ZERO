@@ -127,16 +127,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Assets\CITY#ZERO_Unity_Code_Scaffold\CITY_ZERO_Unity_Code_Scaffold\Assets\_Project\Code\Gameplay\Heat\HeatModel.cs" />
     <Content Remove="Assets\CITY#ZERO_Unity_Master_Pack\CITY_ZERO_Unity_Master_Pack\MergedProject\Assets\_Project\Code\Gameplay\Inventory\InventoryDebugger.cs" />
     <Content Remove="Assets\CITY#ZERO_Unity_Master_Pack\CITY_ZERO_Unity_Master_Pack\MergedProject\Assets\_Project\Code\Gameplay\Inventory\SimpleInventory.cs" />
     <Content Remove="Assets\Editor\BuildScript.cs" />
+    <Content Remove="Assets\Editor\ProjectInitializer.cs" />
+    <Content Remove="Assets\_Project\Code\AI\SimplePoliceAI.cs" />
+    <Content Remove="Assets\_Project\Code\Player\PlayerController.cs" />
+    <Content Remove="Assets\_Project\Code\UI\DebugHUD.cs" />
     <Content Remove="Assets\_Project\Scenes\DEMO_INVENTORY_README.md" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".github\README_LICENSE_ACTIVATION.md" />
     <None Include=".github\README_SECRETS.md" />
     <None Include=".github\workflows\dotnet-build.yml" />
-    <None Include=".github\workflows\unity-ci.yml" />
+    <None Include=".github\workflows\godot-ci.yml" />
+    <None Include="CityZero.Game.csproj" />
+    <None Include="CityZero.Tests.csproj" />
+    <None Include="Tests\HeatModel.Tests\HeatModel.Tests.csproj" />
     <None Include="Tests\SimpleInventory.Tests\SimpleInventory.Tests.csproj" />
   </ItemGroup>
 
