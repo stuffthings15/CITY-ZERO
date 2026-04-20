@@ -22,6 +22,15 @@ jobs:
             Packages
           key: ${{ runner.os }}-unity-${{ hashFiles('Packages/manifest.json') }}
 
+      - name: Restore Unity license (optional)
+        if: ${{ secrets.UNITY_LICENSE != '' }}
+        run: |
+          echo "Restoring Unity license from secret UNITY_LICENSE"
+          mkdir -p $HOME/.local/share/unity3d
+          echo "${{ secrets.UNITY_LICENSE }}" | base64 --decode > $HOME/.local/share/unity3d/Unity_lic.ulf
+          ls -l $HOME/.local/share/unity3d || true
+        shell: bash
+
       - name: Unity Builder
         uses: game-ci/unity-builder@v2
         with:
