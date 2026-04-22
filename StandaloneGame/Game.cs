@@ -330,6 +330,9 @@ namespace CityZero
     // ── Mission phase ─────────────────────────────────────────────────────────
     enum MissionPhase { Inactive, Pickup, Deliver, EscapeHeat, Complete, Failed }
 
+    // ── Game screen ──────────────────────────────────────────────────────────
+    enum GameScreen { Title, Playing, Paused, Dead }
+
     // ── District ─────────────────────────────────────────────────────────────
     record District(string Id, string Name, Color Ground, Color Accent, int GridX, int GridY);
 
@@ -340,11 +343,13 @@ namespace CityZero
         private readonly GameState     _state;
         private readonly Renderer      _renderer;
         private readonly HashSet<Keys> _keys    = new();
-        private readonly HashSet<Keys> _pressed = new();   // one-frame press set
+        private readonly HashSet<Keys> _pressed = new();
+
+        private GameScreen _screen = GameScreen.Title;
 
         public GameWindow()
         {
-            Text            = "CITY//ZERO  —  GTA2 Style";
+            Text            = "CITY//ZERO";
             ClientSize      = new Size(1280, 720);
             DoubleBuffered  = true;
             BackColor       = Color.Black;
@@ -357,7 +362,28 @@ namespace CityZero
 
             _loop = new GameLoop(16, () =>
             {
-                _state.Update(_keys, _pressed);
+                switch (_screen)
+                {
+                    case GameScreen.Playing:
+                        _state.Update(_keys, _pressed);
+                        if (_state.Health <= 0) _screen = GameScreen.Dead;
+                        break;
+                    case GameScreen.Title:
+                    case GameScreen.Dead:
+                        if (_pressed.Contains(Keys.Enter) || _pressed.Contains(Keys.Space))
+                        {
+                            if (_screen == GameScreen.Dead) _state.Respawn();
+                            _screen = GameScreen.Playing;
+                        }
+                        break;
+                    case GameScreen.Paused:
+                        if (_pressed.Contains(Keys.Escape) || _pressed.Contains(Keys.P))
+                            _screen = GameScreen.Playing;
+                        break;
+                }
+                if (_screen == GameScreen.Playing &&
+                    (_pressed.Contains(Keys.Escape) || _pressed.Contains(Keys.P)))
+                    _screen = GameScreen.Paused;
                 _pressed.Clear();
                 Invalidate();
             });
@@ -370,7 +396,7 @@ namespace CityZero
         }
 
         protected override void OnPaint(PaintEventArgs e) =>
-            _renderer.Draw(e.Graphics, _state);
+            _renderer.Draw(e.Graphics, _state, _screen);
     }
 
     // ── Game state ────────────────────────────────────────────────────────────
@@ -465,6 +491,9 @@ namespace CityZero
         public float WorldTime = 480f;          // minutes; 0-1440 day cycle
         public const float DayLength = 1440f;
 
+        // ── Muzzle flash ──────────────────────────────────────────────────────
+        public float MuzzleFlashTimer = 0f;     // > 0 = draw flash
+
         // ── Interaction prompt ────────────────────────────────────────────────
         public bool   ShowPrompt  = false;
         public string PromptLabel = "";
@@ -504,9 +533,13 @@ namespace CityZero
             }
             else
             {
-                HeatScore = Math.Max(HeatScore - 3f * dt, 0f);
+                // Heat decays 3×faster if player is off-road (hiding)
+                float decayMul = IsOnRoad() ? 1f : 3f;
+                HeatScore = Math.Max(HeatScore - 3f * dt * decayMul, 0f);
                 IsMoving  = false;
             }
+
+            if (MuzzleFlashTimer > 0) MuzzleFlashTimer -= dt;
 
             HeatLevel = HeatScore switch
             {
@@ -772,20 +805,30 @@ namespace CityZero
 
         private void SpawnTraffic()
         {
-            float speed = 75f + (float)_rng.NextDouble() * 65f;
+            float speed  = 75f + (float)_rng.NextDouble() * 65f;
             string sprite = CivSprites[_rng.Next(CivSprites.Length)];
 
-            int roadX = _rng.Next(0, (DistrictSize * 3) / RoadStep) * RoadStep + RoadStep / 2;
-            int roadY = _rng.Next(0, (DistrictSize * 2) / RoadStep) * RoadStep + RoadStep / 2;
+            int wW = DistrictSize * 3, wH = DistrictSize * 2;
+            // Pick a random road and lane offset (-6 or +6 from centre = two lanes)
+            bool vertical = _rng.Next(2) == 0;
+            float lane    = (_rng.Next(2) == 0 ? -6f : 6f);
 
-            int side = _rng.Next(4);
             PointF pos; float angle;
-            switch (side)
+            if (vertical)
             {
-                case 0:  pos = new(roadX, -20);                        angle = 180f; break;
-                case 1:  pos = new(roadX, DistrictSize * 2 + 20);      angle =   0f; break;
-                case 2:  pos = new(-20, roadY);                        angle =  90f; break;
-                default: pos = new(DistrictSize * 3 + 20, roadY);      angle = 270f; break;
+                int roadX = (1 + _rng.Next(wW / RoadStep - 1)) * RoadStep;
+                if (_rng.Next(2) == 0)
+                { pos = new(roadX + lane, -30f);  angle = 180f; }   // south-bound
+                else
+                { pos = new(roadX - lane,  wH + 30f); angle =   0f; }  // north-bound
+            }
+            else
+            {
+                int roadY = (1 + _rng.Next(wH / RoadStep - 1)) * RoadStep;
+                if (_rng.Next(2) == 0)
+                { pos = new(-30f,        roadY + lane); angle =  90f; } // east-bound
+                else
+                { pos = new(wW + 30f,    roadY - lane); angle = 270f; } // west-bound
             }
             Npcs.Add(new NpcVehicle(pos, angle, speed, false, Color.White, sprite));
         }
@@ -850,8 +893,9 @@ namespace CityZero
                 else if (WeaponAmmo > 0)
                 {
                     WeaponAmmo--;
-                    HeatScore = Math.Min(HeatScore + EquippedWeapon.HeatNoise * 3f, 100f);
-                    FireTimer = 1f / EquippedWeapon.FireRate;
+                    HeatScore       = Math.Min(HeatScore + EquippedWeapon.HeatNoise * 3f, 100f);
+                    FireTimer       = 1f / EquippedWeapon.FireRate;
+                    MuzzleFlashTimer = 0.06f;
                 }
                 else
                 {
@@ -966,7 +1010,39 @@ namespace CityZero
             int h = (int)(WorldTime / 60) % 24, m = (int)(WorldTime % 60);
             return $"{h:D2}:{m:D2}";
         }
-    }
+
+        // Respawn at Old Quarter safehouse
+        public void Respawn()
+        {
+            Health    = 100; Armor = 0; HeatScore = 0f;
+            PlayerPos = new PointF(55f, 55f);
+            Npcs.RemoveAll(n => n.IsPolice);
+            SirenAudio.Update(0);
+        }
+
+        // 0 = noon bright, 1 = full dark midnight
+        public float NightAlpha()
+        {
+            float t = WorldTime / DayLength;   // 0–1
+            // Dusk 0.70–0.80, Night 0.87–0.20, Dawn 0.20–0.30
+            if (t >= 0.30f && t < 0.70f) return 0f;         // full day
+            if (t >= 0.70f && t < 0.80f) return (t - 0.70f) / 0.10f;   // darkening
+            if (t >= 0.80f || t < 0.20f) return 1f;         // full night
+            return 1f - (t - 0.20f) / 0.10f;                // brightening
+        }
+
+        // True when player is roughly on a road (within RoadHalfW + sidewalk of a road centre)
+        public bool IsOnRoad()
+        {
+            int step = RoadStep, hw = RoadHalfW + 12;
+            int wW = DistrictSize * 3, wH = DistrictSize * 2;
+            for (int x = step; x < wW; x += step)
+                if (MathF.Abs(PlayerPos.X - x) < hw) return true;
+            for (int y = step; y < wH; y += step)
+                if (MathF.Abs(PlayerPos.Y - y) < hw) return true;
+            return false;
+        }
+    }   // end GameState
 
     // ── Renderer ──────────────────────────────────────────────────────────────
     class Renderer
@@ -993,9 +1069,13 @@ namespace CityZero
         public Renderer(Size screen) => _screen = screen;
 
         // ── Master draw ───────────────────────────────────────────────────────
-        public void Draw(Graphics g, GameState s)
+        public void Draw(Graphics g, GameState s, GameScreen screen)
         {
             _tick++;
+
+            if (screen == GameScreen.Title)
+            { DrawTitleScreen(g); return; }
+
             g.Clear(s.SkyColor());
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -1006,8 +1086,7 @@ namespace CityZero
             g.TranslateTransform(cx, cy);
             g.ScaleTransform(zoom, zoom);
 
-            DrawDistricts(g, s);   // faint district name labels only
-            // One DrawImage for the entire baked world (tiles + roads + sidewalks)
+            DrawDistricts(g, s);
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.DrawImage(WorldBaker.World, 0, 0);
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -1016,12 +1095,24 @@ namespace CityZero
             DrawMissionMarkers(g, s);
             DrawNpcs(g, s);
             DrawPlayer(g, s);
+            if (s.MuzzleFlashTimer > 0) DrawMuzzleFlash(g, s);
 
             g.ResetTransform();
+
+            // Night darkness overlay
+            float na = s.NightAlpha();
+            if (na > 0.01f)
+            {
+                using var nb = new SolidBrush(Color.FromArgb((int)(na * 140), 5, 5, 18));
+                g.FillRectangle(nb, 0, 0, _screen.Width, _screen.Height);
+            }
 
             DrawVignette(g, s);
             DrawHUD(g, s);
             DrawMinimap(g, s);
+
+            if (screen == GameScreen.Paused) DrawPauseOverlay(g);
+            if (screen == GameScreen.Dead)   DrawDeadOverlay(g, s);
         }
 
         // ── District name labels only (ground is baked into WorldBaker) ─────
@@ -1082,6 +1173,20 @@ namespace CityZero
                         g.FillRectangle(rb, bx + 5, by + 5, bw / 2 - 3, bh / 2 - 3);
                         for (int i = 0; i < 3; i++)
                             g.FillRectangle(dot, bx + bw - 8 - i * 6, by + 4, 4, 4);
+
+                        // Small building-use label drawn from a seeded tag pool
+                        string[] tags = d.Id switch
+                        {
+                            "old_quarter"    => new[]{"BAR","PAWN","LAUNDRY","DINER","MARKET"},
+                            "glass_heights"  => new[]{"CORP","BANK","HOTEL","LAW","MEDIA"},
+                            "ash_industrial" => new[]{"DEPOT","FORGE","WASTE","SMELTER"},
+                            "iron_docks"     => new[]{"DOCK","STORAGE","FREIGHT","FUEL"},
+                            "the_spire"      => new[]{"EXEC","VAULT","PENTHOUSE","CLUB"},
+                            _                => new[]{"BAR","HOSTEL","TATTOO","ARCADE"},
+                        };
+                        int tagIdx = (bx * 3 + by * 7) % tags.Length;
+                        using var tl = new SolidBrush(Color.FromArgb(55, d.Accent));
+                        g.DrawString(tags[tagIdx], _tinyFont, tl, bx + 3, by + bh - 9);
                     }
 
                     // Lit windows at night — scattered 4×4 yellow/warm rects
@@ -1229,6 +1334,116 @@ namespace CityZero
                 if (flipH) g.ScaleTransform(-1f, 1f);
                 g.DrawImage(bmp, -12, -12, 24, 24);
                 g.Restore(saved);
+            }
+        }
+
+        // ── Muzzle flash ──────────────────────────────────────────────────────
+        private static void DrawMuzzleFlash(Graphics g, GameState s)
+        {
+            float rad = (s.PlayerAngle - 90f) * MathF.PI / 180f;
+            float fx  = s.PlayerPos.X + MathF.Cos(rad) * 22f;
+            float fy  = s.PlayerPos.Y + MathF.Sin(rad) * 22f;
+            using var fb = new SolidBrush(Color.FromArgb(210, 255, 240, 80));
+            g.FillEllipse(fb, fx - 8, fy - 8, 16, 16);
+            using var fo = new SolidBrush(Color.FromArgb(120, 255, 255, 255));
+            g.FillEllipse(fo, fx - 4, fy - 4, 8, 8);
+        }
+
+        // ── Title screen ──────────────────────────────────────────────────────
+        private void DrawTitleScreen(Graphics g)
+        {
+            g.Clear(Color.FromArgb(6, 4, 14));
+            // Grid lines for atmosphere
+            using var grid = new Pen(Color.FromArgb(18, 0, 200, 100), 1f);
+            for (int x = 0; x < _screen.Width;  x += 40) g.DrawLine(grid, x, 0, x, _screen.Height);
+            for (int y = 0; y < _screen.Height; y += 40) g.DrawLine(grid, 0, y, _screen.Width, y);
+
+            // Title
+            using var titleFont = new Font("Consolas", 52, FontStyle.Bold);
+            using var titleBr   = new SolidBrush(Color.FromArgb(220, 60, 255, 140));
+            string title = "CITY//ZERO";
+            var ts = g.MeasureString(title, titleFont);
+            g.DrawString(title, titleFont, titleBr,
+                (_screen.Width - ts.Width) / 2f, _screen.Height / 2f - 120f);
+
+            // Subtitle
+            using var subFont = new Font("Consolas", 13, FontStyle.Regular);
+            using var subBr   = new SolidBrush(Color.FromArgb(170, 180, 220, 180));
+            string sub = "A top-down open world crime game";
+            var ss = g.MeasureString(sub, subFont);
+            g.DrawString(sub, subFont, subBr, (_screen.Width - ss.Width) / 2f, _screen.Height / 2f - 40f);
+
+            // Controls
+            string[] lines =
+            {
+                "WASD ─ Move          E ─ Interact",
+                "Q ─ Cycle Weapon    Space ─ Fire",
+                "F5 ─ Save           F9 ─ Load",
+                "P / ESC ─ Pause     +/- ─ Zoom",
+            };
+            using var ctrlFont = new Font("Consolas", 9, FontStyle.Regular);
+            using var ctrlBr   = new SolidBrush(Color.FromArgb(120, 140, 200, 140));
+            float cy2 = _screen.Height / 2f + 20f;
+            foreach (var line in lines)
+            {
+                var ls = g.MeasureString(line, ctrlFont);
+                g.DrawString(line, ctrlFont, ctrlBr, (_screen.Width - ls.Width) / 2f, cy2);
+                cy2 += 18f;
+            }
+
+            // Prompt
+            if ((_tick / 30) % 2 == 0)
+            {
+                using var pFont = new Font("Consolas", 14, FontStyle.Bold);
+                using var pBr   = new SolidBrush(Color.FromArgb(220, 255, 220, 60));
+                string prompt = "PRESS  ENTER  TO  START";
+                var ps2 = g.MeasureString(prompt, pFont);
+                g.DrawString(prompt, pFont, pBr,
+                    (_screen.Width - ps2.Width) / 2f, _screen.Height / 2f + 130f);
+            }
+        }
+
+        // ── Pause overlay ─────────────────────────────────────────────────────
+        private void DrawPauseOverlay(Graphics g)
+        {
+            using var dim = new SolidBrush(Color.FromArgb(160, 4, 4, 12));
+            g.FillRectangle(dim, 0, 0, _screen.Width, _screen.Height);
+            using var pFont = new Font("Consolas", 36, FontStyle.Bold);
+            using var pBr   = new SolidBrush(Color.FromArgb(230, 255, 220, 60));
+            string txt = "PAUSED";
+            var sz = g.MeasureString(txt, pFont);
+            g.DrawString(txt, pFont, pBr,
+                (_screen.Width - sz.Width) / 2f, _screen.Height / 2f - 40f);
+            using var hFont = new Font("Consolas", 11, FontStyle.Regular);
+            using var hBr   = new SolidBrush(Color.FromArgb(160, 180, 180, 180));
+            string hint = "P or ESC to resume  •  F5 to save";
+            var hs = g.MeasureString(hint, hFont);
+            g.DrawString(hint, hFont, hBr,
+                (_screen.Width - hs.Width) / 2f, _screen.Height / 2f + 20f);
+        }
+
+        // ── Death overlay ─────────────────────────────────────────────────────
+        private void DrawDeadOverlay(Graphics g, GameState s)
+        {
+            using var dim = new SolidBrush(Color.FromArgb(185, 60, 0, 0));
+            g.FillRectangle(dim, 0, 0, _screen.Width, _screen.Height);
+            using var dFont = new Font("Consolas", 42, FontStyle.Bold);
+            using var dBr   = new SolidBrush(Color.FromArgb(240, 230, 30, 30));
+            string txt = "WASTED";
+            var sz = g.MeasureString(txt, dFont);
+            g.DrawString(txt, dFont, dBr,
+                (_screen.Width - sz.Width) / 2f, _screen.Height / 2f - 60f);
+            using var sFont = new Font("Consolas", 11, FontStyle.Regular);
+            using var sBr   = new SolidBrush(Color.FromArgb(180, 200, 180, 180));
+            string sub = $"Cash lost: ${Math.Min(s.Cash / 5, 500)}   You respawn at the Safehouse";
+            var ss2 = g.MeasureString(sub, sFont);
+            g.DrawString(sub, sFont, sBr, (_screen.Width - ss2.Width) / 2f, _screen.Height / 2f + 10f);
+            if ((_tick / 28) % 2 == 0)
+            {
+                string hint = "PRESS  ENTER  TO  RESPAWN";
+                var hs = g.MeasureString(hint, sFont);
+                g.DrawString(hint, sFont, new SolidBrush(Color.FromArgb(210, 255, 200, 60)),
+                    (_screen.Width - hs.Width) / 2f, _screen.Height / 2f + 50f);
             }
         }
 
