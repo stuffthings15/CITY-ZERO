@@ -508,6 +508,14 @@ namespace CityZero
         // ── Muzzle flash ──────────────────────────────────────────────────────
         public float MuzzleFlashTimer = 0f;     // > 0 = draw flash
 
+        // ── Camera shake ─────────────────────────────────────────────────────
+        public float ShakeTimer    = 0f;
+        public float ShakeIntensity = 0f;
+
+        // ── UI notifications ──────────────────────────────────────────────────
+        public string NotifyText  = "";
+        public float  NotifyTimer = 0f;
+
         // ── Interaction prompt ────────────────────────────────────────────────
         public bool   ShowPrompt  = false;
         public string PromptLabel = "";
@@ -554,6 +562,7 @@ namespace CityZero
             }
 
             if (MuzzleFlashTimer > 0) MuzzleFlashTimer -= dt;
+            if (ShakeTimer      > 0) ShakeTimer -= dt;
 
             HeatLevel = HeatScore switch
             {
@@ -578,10 +587,12 @@ namespace CityZero
             SirenAudio.Update(HeatLevel);
             AnimTick++;
 
+            if (NotifyTimer > 0) NotifyTimer -= dt;
+
             // Save on F5, load on F9, delete on F12
-            if (pressed.Contains(Keys.F5))  SaveManager.Save(this);
-            if (pressed.Contains(Keys.F9))  SaveManager.Load(this);
-            if (pressed.Contains(Keys.F12)) SaveManager.Delete();
+            if (pressed.Contains(Keys.F5))  { SaveManager.Save(this);   NotifyText = "Game saved.";        NotifyTimer = 2.5f; }
+            if (pressed.Contains(Keys.F9))  { SaveManager.Load(this);   NotifyText = "Save loaded.";       NotifyTimer = 2.5f; }
+            if (pressed.Contains(Keys.F12)) { SaveManager.Delete();      NotifyText = "Save file deleted."; NotifyTimer = 2.5f; }
 
             // Cycle weapon on Q
             if (pressed.Contains(Keys.Q)) CycleWeapon();
@@ -918,6 +929,8 @@ namespace CityZero
                     HeatScore       = Math.Min(HeatScore + EquippedWeapon.HeatNoise * 3f, 100f);
                     FireTimer       = 1f / EquippedWeapon.FireRate;
                     MuzzleFlashTimer = 0.06f;
+                    ShakeTimer      = 0.08f;
+                    ShakeIntensity  = EquippedWeapon.Category == "shotgun" ? 5f : 2.5f;
                 }
                 else
                 {
@@ -1108,6 +1121,22 @@ namespace CityZero
             float cx   = _screen.Width  / 2f - s.PlayerPos.X * zoom;
             float cy   = _screen.Height / 2f - s.PlayerPos.Y * zoom;
 
+            // Camera shake
+            if (s.ShakeTimer > 0)
+            {
+                var rng2 = new Random();
+                cx += (float)(rng2.NextDouble() * 2 - 1) * s.ShakeIntensity;
+                cy += (float)(rng2.NextDouble() * 2 - 1) * s.ShakeIntensity;
+            }
+
+            // Camera shake
+            if (s.ShakeTimer > 0)
+            {
+                var rng = new Random();
+                cx += (float)(rng.NextDouble() * 2 - 1) * s.ShakeIntensity;
+                cy += (float)(rng.NextDouble() * 2 - 1) * s.ShakeIntensity;
+            }
+
             g.TranslateTransform(cx, cy);
             g.ScaleTransform(zoom, zoom);
 
@@ -1121,6 +1150,9 @@ namespace CityZero
             DrawNpcs(g, s);
             DrawPlayer(g, s);
             if (s.MuzzleFlashTimer > 0) DrawMuzzleFlash(g, s);
+            if (s.MuzzleFlashTimer > 0 && (s.EquippedWeapon?.Category == "melee"))
+                DrawMeleeArc(g, s);
+            if (s.IsNight()) DrawStreetLights(g, s);
 
             g.ResetTransform();
 
@@ -1472,6 +1504,47 @@ namespace CityZero
             }
         }
 
+        // ── Street lights (night only) ────────────────────────────────────────────
+        private static void DrawStreetLights(Graphics g, GameState s)
+        {
+            int step = GameState.RoadStep;
+            int wW   = GameState.DistrictSize * 3;
+            int wH   = GameState.DistrictSize * 2;
+            int hw   = GameState.RoadHalfW;
+
+            for (int x = step; x < wW; x += step)
+            for (int y = step; y < wH; y += step)
+            {
+                var d = GameState.Districts.FirstOrDefault(d2 =>
+                    x >= d2.GridX * GameState.DistrictSize && x < (d2.GridX+1) * GameState.DistrictSize &&
+                    y >= d2.GridY * GameState.DistrictSize && y < (d2.GridY+1) * GameState.DistrictSize);
+                if (d is null) continue;
+
+                // Each intersection: four corner lamp posts
+                foreach (var (ox, oy) in new[]{(-hw-8,-hw-8),(hw+4,-hw-8),(-hw-8,hw+4),(hw+4,hw+4)})
+                {
+                    int lx = x + ox, ly = y + oy;
+                    // Halo
+                    using var halo = new SolidBrush(Color.FromArgb(18, d.Accent));
+                    g.FillEllipse(halo, lx - 14, ly - 14, 28, 28);
+                    // Bulb
+                    using var bulb = new SolidBrush(Color.FromArgb(200, d.Accent));
+                    g.FillEllipse(bulb, lx - 3, ly - 3, 6, 6);
+                }
+            }
+        }
+
+        // ── Melee swing arc ──────────────────────────────────────────────────
+        private static void DrawMeleeArc(Graphics g, GameState s)
+        {
+            float rad = (s.PlayerAngle - 90f) * MathF.PI / 180f;
+            float cx  = s.PlayerPos.X + MathF.Cos(rad) * 18f;
+            float cy2 = s.PlayerPos.Y + MathF.Sin(rad) * 18f;
+            using var arcPen = new Pen(Color.FromArgb(180, 255, 220, 80), 3f);
+            g.DrawArc(arcPen, cx - 14, cy2 - 14, 28, 28,
+                s.PlayerAngle - 90f - 60f, 120f);
+        }
+
         // ── HUD ───────────────────────────────────────────────────────────────
         private void DrawHUD(Graphics g, GameState s)
         {
@@ -1545,14 +1618,18 @@ namespace CityZero
                 bool lit = i < s.HeatLevel;
                 var  col = lit ? _heatColors[Math.Min(s.HeatLevel-1, 4)]
                                : Color.FromArgb(38,38,44);
-                using var br = new SolidBrush(col);
-                g.FillRectangle(br, x + i * 30, y + 16, 26, 16);
-                if (lit)
-                {
-                    using var glow = new Pen(Color.FromArgb(130, col), 1);
-                    g.DrawRectangle(glow, x + i * 30, y + 16, 26, 16);
-                }
+                using var br  = new SolidBrush(col);
+                using var pen = new Pen(Color.FromArgb(lit ? 160 : 40, col), 1f);
+                g.FillRectangle(br,  x + i * 30, y + 16, 26, 16);
+                g.DrawRectangle(pen, x + i * 30, y + 16, 26, 16);
+                // Star glyph
+                using var sl = new SolidBrush(lit ? Color.FromArgb(230,255,255,255)
+                                                  : Color.FromArgb(50,100,100,100));
+                g.DrawString("★", _tinyFont, sl, x + i * 30 + 7, y + 18);
             }
+            // Numeric score
+            g.DrawString($"{(int)s.HeatScore}%", _tinyFont,
+                new SolidBrush(Color.FromArgb(140,200,200,200)), x + 155, y + 18);
         }
 
         private void DrawBar(Graphics g, string label, int val, int max, Color col, int x, int y)
@@ -1571,6 +1648,15 @@ namespace CityZero
             g.FillRectangle(new SolidBrush(Color.FromArgb(200,7,7,13)), 0, sy, _screen.Width, 42);
             g.DrawLine(new Pen(Color.FromArgb(70, Color.Gray)), 0, sy, _screen.Width, sy);
 
+            if (!s.MissionAvailable && s.MissionPhase == MissionPhase.Inactive)
+            {
+                g.DrawString("NO ACTIVE CONTRACT", _hudFont,
+                    new SolidBrush(Color.FromArgb(130,130,130)), 12, sy + 4);
+                g.DrawString("All missions complete for this act.", _smallFont,
+                    new SolidBrush(Color.FromArgb(110,110,110)), 12, sy + 22);
+                return;
+            }
+
             Color tcol = s.MissionPhase switch
             {
                 MissionPhase.Complete => Color.FromArgb( 70,230, 70),
@@ -1581,18 +1667,32 @@ namespace CityZero
             g.DrawString(s.MissionObjective, _smallFont,
                 new SolidBrush(Color.FromArgb(210,210,210)), 12, sy + 22);
 
+            // Timer (deliver phase)
             if (s.MissionPhase == MissionPhase.Deliver && s.MissionTimer > 0)
             {
                 Color tc = s.MissionTimer < 30f ? Color.Red : Color.Yellow;
                 g.DrawString($"{(int)s.MissionTimer}s", _hudFont,
                     new SolidBrush(tc), _screen.Width - 90, sy + 8);
             }
+
+            // [R] label: "Retry" on fail, "Next" on complete
+            if (s.MissionPhase == MissionPhase.Failed || s.MissionPhase == MissionPhase.Complete)
+            {
+                string rl = s.MissionPhase == MissionPhase.Failed ? "[R] Retry" : "[R] Next Mission";
+                var rs = g.MeasureString(rl, _smallFont);
+                g.DrawString(rl, _smallFont,
+                    new SolidBrush(Color.FromArgb(210, 255, 220, 60)),
+                    _screen.Width - rs.Width - 12, sy + 22);
+            }
         }
 
         private void DrawPrompt(Graphics g, string label)
         {
-            const int pw = 320, ph = 30;
-            int px = (_screen.Width - pw) / 2, py = _screen.Height / 2 - 50;
+            var  sz  = g.MeasureString(label, _smallFont);
+            int  pw  = (int)sz.Width + 24;
+            int  ph  = 30;
+            int  px  = (_screen.Width - pw) / 2;
+            int  py  = _screen.Height / 2 - 50;
             g.FillRectangle(new SolidBrush(Color.FromArgb(190,8,8,18)), px, py, pw, ph);
             g.DrawRectangle(new Pen(Color.FromArgb(200, Color.Yellow), 1f), px, py, pw, ph);
             g.DrawString(label, _smallFont, Brushes.Yellow, px + 10, py + 8);
@@ -1674,6 +1774,7 @@ namespace CityZero
             g.FillRectangle(new SolidBrush(Color.FromArgb(195,7,7,13)), mx, my, mW, mH);
 
             float wW = GameState.DistrictSize * 3f, wH = GameState.DistrictSize * 2f;
+            var   cur = s.CurrentDistrict();
 
             // District tiles
             foreach (var d in GameState.Districts)
@@ -1682,11 +1783,13 @@ namespace CityZero
                 float dy = my + (d.GridY * GameState.DistrictSize / wH) * mH;
                 float dw = (GameState.DistrictSize / wW) * mW;
                 float dh = (GameState.DistrictSize / wH) * mH;
-                using var br  = new SolidBrush(Color.FromArgb(155, d.Ground));
-                using var pen = new Pen(Color.FromArgb(70, d.Accent), 1);
+                int   fillAlpha = (cur?.Id == d.Id) ? 200 : 155;
+                using var br  = new SolidBrush(Color.FromArgb(fillAlpha, d.Ground));
+                using var pen = new Pen(Color.FromArgb(cur?.Id == d.Id ? 200 : 70, d.Accent),
+                                        cur?.Id == d.Id ? 2f : 1f);
                 g.FillRectangle(br, dx, dy, dw, dh);
                 g.DrawRectangle(pen, dx, dy, dw, dh);
-                using var lb = new SolidBrush(Color.FromArgb(90, d.Accent));
+                using var lb = new SolidBrush(Color.FromArgb(cur?.Id == d.Id ? 160 : 90, d.Accent));
                 g.DrawString(d.Name, _tinyFont, lb, dx + 2, dy + 2);
             }
 
@@ -1734,6 +1837,19 @@ namespace CityZero
 
             g.DrawRectangle(new Pen(Color.FromArgb(85, Color.Gray)), mx, my, mW, mH);
             g.DrawString("MAP", _tinyFont, Brushes.DimGray, mx + 3, my - 13);
+
+            // Notification toast
+            if (s.NotifyTimer > 0)
+            {
+                int   alpha = Math.Clamp((int)(s.NotifyTimer / 2.5f * 220), 0, 220);
+                var   ns    = g.MeasureString(s.NotifyText, _smallFont);
+                float nx    = (_screen.Width - ns.Width) / 2f;
+                float ny    = _screen.Height - 85f;
+                g.FillRectangle(new SolidBrush(Color.FromArgb(alpha * 3 / 4, 8, 18, 8)),
+                    nx - 10, ny - 4, ns.Width + 20, ns.Height + 6);
+                g.DrawString(s.NotifyText, _smallFont,
+                    new SolidBrush(Color.FromArgb(alpha, 100, 255, 120)), nx, ny);
+            }
         }
     }
 
