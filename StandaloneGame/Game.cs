@@ -580,17 +580,31 @@ namespace CityZero
                         { Cash -= 200; Health = 100; Armor = 100; }
                         return;
                     case MarkerType.Shop:
-                        ShowPrompt  = true;
-                        PromptLabel = $"[E] {m.DisplayName} — Buy SMG ($1450)";
-                        if (pressed.Contains(Keys.E) && Cash >= 1450
-                            && !OwnedWeaponIds.Contains("smg_union9"))
+                    {
+                        // Find the cheapest weapon the player doesn't own
+                        var buyable = GameData.Weapons
+                            .Where(w => !OwnedWeaponIds.Contains(w.Id) && w.BuyPrice > 0)
+                            .OrderBy(w => w.BuyPrice)
+                            .FirstOrDefault();
+                        if (buyable is null)
                         {
-                            Cash -= 1450;
-                            OwnedWeaponIds.Add("smg_union9");
-                            EquippedWeapon = GameData.GetWeapon("smg_union9");
-                            WeaponAmmo     = EquippedWeapon!.MagazineSize;
+                            ShowPrompt  = true;
+                            PromptLabel = $"[E] {m.DisplayName} — All weapons owned!";
+                        }
+                        else
+                        {
+                            ShowPrompt  = true;
+                            PromptLabel = $"[E] {m.DisplayName} — Buy {buyable.DisplayName} (${buyable.BuyPrice})";
+                            if (pressed.Contains(Keys.E) && Cash >= buyable.BuyPrice)
+                            {
+                                Cash -= buyable.BuyPrice;
+                                OwnedWeaponIds.Add(buyable.Id);
+                                EquippedWeapon = buyable;
+                                WeaponAmmo     = buyable.MagazineSize;
+                            }
                         }
                         return;
+                    }
                 }
             }
 
@@ -675,11 +689,12 @@ namespace CityZero
                 case MissionPhase.Failed:
                     if (pressed.Contains(Keys.R))
                     {
+                        bool wasFailed = MissionPhase == MissionPhase.Failed;
                         MissionPhase     = MissionPhase.Inactive;
                         MissionObjective = "Find the pickup marker.  [E near marker]";
                         MissionTimer     = 0f;
                         MissionAvailable = true;
-                        if (MissionPhase == MissionPhase.Failed) HeatScore = 0f;
+                        if (wasFailed) HeatScore = 0f;
                     }
                     break;
             }
@@ -688,18 +703,22 @@ namespace CityZero
         // ── NPC traffic + police ──────────────────────────────────────────────
         private void UpdateNpcs(float dt)
         {
-            // Spawn civilian traffic
+            // Max traffic count driven by current district density
+            var dd       = GameData.GetDistrict(CurrentDistrict()?.Id ?? "");
+            float dens   = dd is null ? 0.7f : (IsNight() ? dd.CivilianDensityNight : dd.TrafficDensityDay);
+            int   maxCiv = Math.Max(4, (int)(dens * 20f));
+            int   maxPol = dd is null ? 0 : (int)(dd.PolicePatrolIntensity * (HeatLevel + 1) * 3f);
+
             _trafficTimer -= dt;
-            if (_trafficTimer <= 0 && Npcs.Count(n => !n.IsPolice) < 14)
+            if (_trafficTimer <= 0 && Npcs.Count(n => !n.IsPolice) < maxCiv)
             {
                 _trafficTimer = 1.5f + (float)_rng.NextDouble() * 2f;
                 SpawnTraffic();
             }
 
-            // Spawn police when heat is high
             _policeSpawnTimer -= dt;
-            if (_policeSpawnTimer <= 0 && HeatLevel >= 3 &&
-                Npcs.Count(n => n.IsPolice) < HeatLevel - 1)
+            if (_policeSpawnTimer <= 0 && HeatLevel >= 2 &&
+                Npcs.Count(n => n.IsPolice) < Math.Min(maxPol, HeatLevel * 2))
             {
                 _policeSpawnTimer = 5f;
                 SpawnPolice();
@@ -719,7 +738,19 @@ namespace CityZero
                         npc.Angle = (float)(Math.Atan2(ty, tx) * 180.0 / Math.PI) + 90f;
                         npc.Pos   = new PointF(npc.Pos.X + tx / len * npc.Speed * dt,
                                                npc.Pos.Y + ty / len * npc.Speed * dt);
-                        if (len < 90f) HeatScore = Math.Min(HeatScore + 10f * dt, 100f);
+                        if (len < 90f)
+                        {
+                            HeatScore = Math.Min(HeatScore + 10f * dt, 100f);
+                            // Police deal 6 dmg/s to player on contact (< 30px)
+                            if (len < 30f)
+                            {
+                                int dmg = Armor > 0
+                                    ? (int)(6f * dt)  // absorbed by armor first
+                                    : (int)(8f * dt);
+                                if (Armor > 0) Armor  = Math.Max(0, Armor  - dmg);
+                                else           Health = Math.Max(0, Health - dmg);
+                            }
+                        }
                     }
                 }
                 else
@@ -843,8 +874,12 @@ namespace CityZero
         // ── NPC pedestrians ───────────────────────────────────────────────────
         private void UpdatePeds(float dt)
         {
+            var  dd     = GameData.GetDistrict(CurrentDistrict()?.Id ?? "");
+            float dens  = dd is null ? 0.7f : (IsNight() ? dd.CivilianDensityNight : dd.CivilianDensityDay);
+            int   maxP  = Math.Max(4, (int)(dens * 25f));
+
             _pedSpawnTimer -= dt;
-            if (_pedSpawnTimer <= 0 && Peds.Count < 20)
+            if (_pedSpawnTimer <= 0 && Peds.Count < maxP)
             {
                 _pedSpawnTimer = 2f + (float)_rng.NextDouble() * 3f;
                 SpawnPed();
@@ -1354,9 +1389,26 @@ namespace CityZero
             foreach (var f in GameState.Factions)
             {
                 int rep = s.Reputation.TryGetValue(f.Id, out int v) ? v : 0;
+                var tier = RepHelper.Tier(rep);
+                string tierStr = tier switch
+                {
+                    RepTier.Hostile  => "\u2666HOSTILE",
+                    RepTier.Friendly => "\u2665FRIEND",
+                    RepTier.Trusted  => "\u2605TRUSTED",
+                    _                => "",
+                };
                 // Label
                 using var lb = new SolidBrush(Color.FromArgb(170, f.FactionColor));
-                g.DrawString(f.Name[..Math.Min(f.Name.Length, 14)], _tinyFont, lb, px, py + 2);
+                g.DrawString(f.Name[..Math.Min(f.Name.Length, 12)], _tinyFont, lb, px, py + 2);
+                // Tier string (right of name)
+                if (tierStr != "")
+                {
+                    var tierCol = tier == RepTier.Hostile
+                        ? Color.FromArgb(200, 220, 50, 50)
+                        : Color.FromArgb(180, f.FactionColor);
+                    using var tb = new SolidBrush(tierCol);
+                    g.DrawString(tierStr, _tinyFont, tb, px + 78, py + 2);
+                }
                 // Bar track
                 const int bx = 96, bw = 55, bh = 7;
                 g.FillRectangle(new SolidBrush(Color.FromArgb(38,38,44)), px + bx, py + 4, bw, bh);
@@ -1396,6 +1448,15 @@ namespace CityZero
                 g.DrawRectangle(pen, dx, dy, dw, dh);
                 using var lb = new SolidBrush(Color.FromArgb(90, d.Accent));
                 g.DrawString(d.Name, _tinyFont, lb, dx + 2, dy + 2);
+            }
+
+            // World marker blips (safehouse=green, garage=amber, shop=purple)
+            foreach (var m in GameState.Markers)
+            {
+                float mmx = mx + (m.Pos.X / wW) * mW;
+                float mmy = my + (m.Pos.Y / wH) * mH;
+                g.FillRectangle(new SolidBrush(m.Col), mmx - 3, mmy - 3, 6, 6);
+                g.DrawRectangle(new Pen(Color.FromArgb(180, m.Col), 1f), mmx - 3, mmy - 3, 6, 6);
             }
 
             // NPC blips
