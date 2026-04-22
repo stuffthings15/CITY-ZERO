@@ -4,6 +4,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="StandaloneGame/StandaloneGame.csproj" />
   <Project Path="DevLauncher/CityZero.DevLauncher.csproj" />
   <Project Path="CITY#ZERO.csproj">
     <Platform Solution="*|arm64" Project="arm64" />

@@ -9,6 +9,8 @@ using System.Drawing;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CityZero.Gameplay.Combat;
+using CityZero.Gameplay.Heat;
 
 namespace CityZero
 {
@@ -23,7 +25,11 @@ namespace CityZero
         float    PolicePatrolIntensity,
         float    WealthLevel,          // 0–1  used for shop stock and ped variety
         string[] DominantFactions
-    );
+    )
+    {
+        // Alias used by FactionSystem integration
+        public string[] Factions => DominantFactions;
+    }
 
     // ── Faction relationship tier ─────────────────────────────────────────────
     enum RepTier { Hostile = 0, Neutral = 1, Friendly = 2, Trusted = 3 }
@@ -328,10 +334,12 @@ namespace CityZero
                 if (state is null) return false;
 
                 s.PlayerPos        = new System.Drawing.PointF(state.PosX, state.PosY);
-                s.Health           = state.Health;
-                s.Armor            = state.Armor;
+                s.HealthSys.ApplyDamage(s.HealthSys.CurrentHealth);
+                s.HealthSys.Heal(state.Health);
+                s.ArmorSys.ApplyDamage(s.ArmorSys.CurrentHealth);
+                s.ArmorSys.Heal(state.Armor);
                 s.Cash             = state.Cash;
-                s.HeatScore        = state.HeatScore;
+                s.HeatSys.SetScore(state.HeatScore);
                 s.WorldTime        = state.WorldTime;
                 foreach (var kv in state.Reputation) s.Reputation[kv.Key] = kv.Value;
                 s.MissionPhase     = (MissionPhase)state.MissionPhase;

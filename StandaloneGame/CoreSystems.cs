@@ -56,6 +56,20 @@ namespace CityZero.Gameplay.Heat
             RefreshLevel();
         }
 
+        /// <summary>Add (or subtract with negative delta) heat score. Clamps 0–100.</summary>
+        public void AddScore(float delta)
+        {
+            _heatScore = Math.Clamp(_heatScore + delta, 0f, 100f);
+            RefreshLevel();
+        }
+
+        /// <summary>Directly set heat score. Clamps 0–100.</summary>
+        public void SetScore(float score)
+        {
+            _heatScore = Math.Clamp(score, 0f, 100f);
+            RefreshLevel();
+        }
+
         private void RefreshLevel()
         {
             int prev = _heatLevel;
@@ -229,6 +243,8 @@ namespace CityZero.Gameplay.Combat
             if (!IsAlive || amount <= 0) return;
             CurrentHealth = Math.Min(MaxHealth, CurrentHealth + amount);
         }
+
+        public void FullRestore() => CurrentHealth = MaxHealth;
     }
 }
 

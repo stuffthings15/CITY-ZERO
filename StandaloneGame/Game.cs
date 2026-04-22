@@ -8,6 +8,13 @@ using System.Media;
 using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
+using CityZero.Core.EventBus;
+using CityZero.Core.SaveLoad;
+using CityZero.Gameplay.Combat;
+using CityZero.Gameplay.Heat;
+using CityZero.Gameplay.Inventory;
+using CityZero.Gameplay.Missions;
+using CityZero.Gameplay.Vehicles;
 
 namespace CityZero
 {
@@ -324,21 +331,39 @@ namespace CityZero
         public bool   IsPolice;
         public Color  BodyColor;
         public string SpriteKey;
+
+        // Behavior tree + blackboard (ported from src/AI/BehaviorTree)
+        public readonly BTNode       BT;
+        public readonly AIBlackboard Board = new();
+
         public NpcVehicle(PointF pos, float angle, float speed, bool police, Color color, string sprite)
-        { Pos = pos; Angle = angle; Speed = speed; IsPolice = police; BodyColor = color; SpriteKey = sprite; }
+        {
+            Pos = pos; Angle = angle; Speed = speed; IsPolice = police; BodyColor = color; SpriteKey = sprite;
+            BT = police ? NpcBehaviors.BuildPoliceBT() : NpcBehaviors.BuildCivilianBT();
+            Board.Set(BB.IsPolice, police);
+            Board.Set(BB.Speed,    speed);
+            Board.Set(BB.AlertLevel, 0);
+        }
     }
 
     // ── NPC pedestrian ────────────────────────────────────────────────────────
     class NpcPed
     {
         public PointF Pos;
-        public float  Angle;         // heading in degrees (0=up)
+        public float  Angle;
         public float  Speed;
-        public int    WalkFrame;     // 0-7
+        public int    WalkFrame;
         public float  FrameTimer;
         public bool   FlipH;
+
+        public readonly BTNode       BT    = NpcBehaviors.BuildPedBT();
+        public readonly AIBlackboard Board = new();
+
         public NpcPed(PointF pos, float angle, float speed)
-        { Pos = pos; Angle = angle; Speed = speed; }
+        {
+            Pos = pos; Angle = angle; Speed = speed;
+            Board.Set(BB.AlertLevel, 0);
+        }
     }
 
     // ── Mission phase ─────────────────────────────────────────────────────────
@@ -446,9 +471,19 @@ namespace CityZero
         // ── Player ────────────────────────────────────────────────────────────
         public PointF PlayerPos   = new(DistrictSize / 2f, DistrictSize / 2f);
         public float  PlayerAngle = 0f;
-        public int    Health      = 100;
-        public int    Armor       = 50;
-        public int    Cash        = 800;
+
+
+        // Cash shim — reads/writes EconomySys.Wallet
+        public int Cash
+        {
+            get => EconomySys.WalletInt;
+            set
+            {
+                float diff = value - EconomySys.Wallet;
+                if (diff > 0) EconomySys.AddCash(diff, "set");
+                else if (diff < 0) EconomySys.RestoreWallet(value);
+            }
+        }
 
         // ── Weapons ───────────────────────────────────────────────────────────
         public Weapon?          EquippedWeapon  = GameData.GetWeapon("pipe_hook");
@@ -457,21 +492,55 @@ namespace CityZero
         public float            ReloadTimer     = 0f;
         public float            FireTimer       = 0f;
 
-        // ── Heat ──────────────────────────────────────────────────────────────
-        public int   HeatLevel = 0;
-        public float HeatScore = 0f;
+        // ── CoreSystems ───────────────────────────────────────────────────────
+        // HeatModel (from CityZero.Gameplay.Heat)
+        public readonly HeatModel          HeatSys     = new(decayPerSecond: 3f);
 
-        // ── Reputation (keyed by faction id) ─────────────────────────────────
-        public Dictionary<string, int> Reputation = new()
+        // HealthComponent (from CityZero.Gameplay.Combat)
+        public readonly HealthComponent    HealthSys   = new(maxHealth: 100);
+        public readonly HealthComponent    ArmorSys    = new(maxHealth: 100);
+
+        // SimpleInventory (from CityZero.Gameplay.Inventory)
+        public readonly SimpleInventory    Inventory   = new();
+
+        // MissionManager (from CityZero.Gameplay.Missions)
+        public readonly MissionManager     MissionSys  = new();
+        public MissionRuntime?             ActiveRun;
+
+        // Player vehicle (from CityZero.Gameplay.Vehicles)
+        public readonly VehicleModel       PlayerVehicle = new();
+        public bool                        InVehicle     = false;
+
+        // ── Ported src/ systems (GameBus-connected) ───────────────────────────────
+        public readonly FactionSystem      FactionSys  = new();
+        public readonly EconomySystem      EconomySys  = new();
+        public readonly TimeManager        TimeSys     = new();
+        public readonly MissionSystem      MissionBus  = new();
+
+        // ── Heat (thin wrappers that read from HeatSys) ───────────────────────
+        public int   HeatLevel => HeatSys.HeatLevel;
+        public float HeatScore => HeatSys.HeatScore;
+
+        // ── Health / Armor (read from HealthComponent) ────────────────────────
+        public int Health
         {
-            ["blue_saints"]       = 0,
-            ["razor_union"]       = 0,
-            ["velvet_circuit"]    = 0,
-            ["cinder_mob"]        = 0,
-            ["helix_directorate"] = 0,
-        };
+            get => HealthSys.CurrentHealth;
+            set { /* read-only shim — use HealthSys directly */ }
+        }
+        public int Armor
+        {
+            get => ArmorSys.CurrentHealth;
+            set { /* read-only shim — use ArmorSys directly */ }
+        }
 
-        // ── Mission chain (data-driven via GameData) ──────────────────────────
+        // Reputation backed by FactionSystem
+        public Dictionary<string, int> Reputation
+        {
+            get => FactionSys.ToIntDict();
+            set => FactionSys.RestoreFromDict(value);
+}
+
+        // ── Mission chain
         public MissionDef?     ActiveMission    = GameData.GetMission("mq_a1_01_first_contact");
         public MissionPhase    MissionPhase     = MissionPhase.Inactive;
         public float           MissionTimer     = 0f;
@@ -528,50 +597,114 @@ namespace CityZero
         private int      _frames;
         private DateTime _fpsTimer = DateTime.Now;
 
-        // ─────────────────────────────────────────────────────────────────────
+        // -----------------------------------------------------------------
+        public GameState()
+        {
+            // Wire HeatModel -> EventBus
+            HeatSys.LevelChanged += e => GameEventBus.Raise(e);
+
+            // Wire MissionManager -> EventBus
+            MissionSys.MissionStateChanged += e => GameEventBus.Raise(e);
+
+            // Seed MissionManager with all defined missions
+            foreach (var def in GameData.Missions)
+            {
+                var md = new MissionData
+                {
+                    Id    = def.Id,
+                    Title = def.Title,
+                    Objectives = new List<MissionObjectiveData>
+                    {
+                        new() { Label = "Pick up the package at the marker.", Type = "pickup"  },
+                        new() { Label = "Deliver to the drop point.",          Type = "deliver" },
+                        new() { Label = "Lay low — lose all heat stars.",      Type = "escape"  },
+                    }
+                };
+                MissionSys.RegisterMission(md);
+            }
+
+            // Seed starter inventory
+            Inventory.Add("pipe_hook", 1);
+            Inventory.Add("cash_roll", 2);
+
+            // Place player vehicle near the safehouse
+            PlayerVehicle.X = 120f;
+            PlayerVehicle.Y = 55f;
+        }
+
+        // -----------------------------------------------------------------
         public void Update(HashSet<Keys> keys, HashSet<Keys> pressed)
         {
             const float dt = 0.016f;
 
-            // Movement
+            // -- Movement
             float dx = 0, dy = 0;
             if (keys.Contains(Keys.W) || keys.Contains(Keys.Up))    dy -= MoveSpeed * dt;
             if (keys.Contains(Keys.S) || keys.Contains(Keys.Down))  dy += MoveSpeed * dt;
             if (keys.Contains(Keys.A) || keys.Contains(Keys.Left))  dx -= MoveSpeed * dt;
             if (keys.Contains(Keys.D) || keys.Contains(Keys.Right)) dx += MoveSpeed * dt;
 
-            if (dx != 0 || dy != 0)
+            if (InVehicle)
             {
-                float wW = DistrictSize * 3f, wH = DistrictSize * 2f;
-                PlayerPos = new PointF(
-                    Math.Clamp(PlayerPos.X + dx, 0, wW - 1),
-                    Math.Clamp(PlayerPos.Y + dy, 0, wH - 1));
-                PlayerAngle = (float)(Math.Atan2(dy, dx) * 180.0 / Math.PI) + 90f;
-                // Heat gain scaled by district heatMultiplier
-                var distData = GameData.GetDistrict(CurrentDistrict()?.Id ?? "");
-                float heatMul = distData?.HeatMultiplier ?? 1.0f;
-                HeatScore   = Math.Min(HeatScore + 0.25f * dt * heatMul, 100f);
-                IsMoving    = true;
+                // Drive the VehicleModel
+                float throttle = dy < 0 ? 1f : (dy > 0 ? -0.5f : 0f);
+                float steer    = dx > 0 ? 1f : (dx < 0 ? -1f : 0f);
+                PlayerVehicle.Update(throttle, steer, dt);
+
+                float wW2 = DistrictSize * 3f, wH2 = DistrictSize * 2f;
+                PlayerVehicle.X = Math.Clamp(PlayerVehicle.X, 0, wW2 - 1);
+                PlayerVehicle.Y = Math.Clamp(PlayerVehicle.Y, 0, wH2 - 1);
+                PlayerPos   = new PointF(PlayerVehicle.X, PlayerVehicle.Y);
+                PlayerAngle = PlayerVehicle.Angle;
+                IsMoving    = Math.Abs(PlayerVehicle.Speed) > 1f;
+
+                // Exit vehicle [E]
+                if (pressed.Contains(Keys.E))
+                {
+                    PlayerVehicle.ExitVehicle();
+                    InVehicle = false;
+                    ShowPrompt  = false;
+                }
             }
             else
             {
-                // Heat decays 3×faster if player is off-road (hiding)
-                float decayMul = IsOnRoad() ? 1f : 3f;
-                HeatScore = Math.Max(HeatScore - 3f * dt * decayMul, 0f);
-                IsMoving  = false;
+                if (dx != 0 || dy != 0)
+                {
+                    float wW = DistrictSize * 3f, wH = DistrictSize * 2f;
+                    PlayerPos = new PointF(
+                        Math.Clamp(PlayerPos.X + dx, 0, wW - 1),
+                        Math.Clamp(PlayerPos.Y + dy, 0, wH - 1));
+                    PlayerAngle = (float)(Math.Atan2(dy, dx) * 180.0 / Math.PI) + 90f;
+                    // Heat gain via HeatSys — scale by district multiplier
+                    var distData = GameData.GetDistrict(CurrentDistrict()?.Id ?? "");
+                    float heatMul = distData?.HeatMultiplier ?? 1.0f;
+                    HeatSys.AddScore(0.25f * dt * heatMul);
+                    IsMoving = true;
+                }
+                else
+                {
+                    // Heat decays faster off-road (hiding)
+                    float decayMul = IsOnRoad() ? 1f : 3f;
+                    HeatSys.UpdateDecay(dt * decayMul);
+                    IsMoving = false;
+                }
+
+                // Enter nearby vehicle [V]
+                float vDist = Dist(PlayerPos, new PointF(PlayerVehicle.X, PlayerVehicle.Y));
+                if (vDist < 55f)
+                {
+                    ShowPrompt  = true;
+                    PromptLabel = "[V] Enter Vehicle";
+                    if (pressed.Contains(Keys.V))
+                    {
+                        PlayerVehicle.EnterVehicle();
+                        InVehicle = true;
+                    }
+                }
             }
 
             if (MuzzleFlashTimer > 0) MuzzleFlashTimer -= dt;
             if (ShakeTimer      > 0) ShakeTimer -= dt;
-
-            HeatLevel = HeatScore switch
-            {
-                >= 80 => 4,
-                >= 60 => 3,
-                >= 40 => 2,
-                >= 20 => 1,
-                _     => 0,
-            };
 
             // Zoom
             if (keys.Contains(Keys.Oemplus)  || keys.Contains(Keys.Add))
@@ -589,16 +722,37 @@ namespace CityZero
 
             if (NotifyTimer > 0) NotifyTimer -= dt;
 
-            // Save on F5, load on F9, delete on F12
-            if (pressed.Contains(Keys.F5))  { SaveManager.Save(this);   NotifyText = "Game saved.";        NotifyTimer = 2.5f; }
-            if (pressed.Contains(Keys.F9))  { SaveManager.Load(this);   NotifyText = "Save loaded.";       NotifyTimer = 2.5f; }
-            if (pressed.Contains(Keys.F12)) { SaveManager.Delete();      NotifyText = "Save file deleted."; NotifyTimer = 2.5f; }
+            // Save on F5, load on F9, delete on F12 — uses MultiSlotSaveSystem (atomic, 4 slots)
+            if (pressed.Contains(Keys.F5))
+            {
+                var sd = BuildSlotSaveData();
+                bool ok = MultiSlotSaveSystem.SaveGame(0, sd);
+                SaveManager.Save(this);          // keep legacy single-file save in sync
+                NotifyText  = ok ? "Game saved." : "Save failed!";
+                NotifyTimer = 2.5f;
+            }
+            if (pressed.Contains(Keys.F9))
+            {
+                var sd = MultiSlotSaveSystem.LoadGame(0);
+                if (sd != null) ApplySlotSaveData(sd);
+                else SaveManager.Load(this);
+                NotifyText  = "Save loaded.";
+                NotifyTimer = 2.5f;
+            }
+            if (pressed.Contains(Keys.F12))
+            {
+                MultiSlotSaveSystem.DeleteSlot(0);
+                SaveManager.Delete();
+                NotifyText  = "Save file deleted.";
+                NotifyTimer = 2.5f;
+            }
 
             // Cycle weapon on Q
             if (pressed.Contains(Keys.Q)) CycleWeapon();
 
-            // Day/night at 10× real-time
+            // Day/night at 10× real-time (also ticked by TimeManager)
             WorldTime = (WorldTime + dt * 10f) % DayLength;
+            TimeSys.SyncFromWorldTime(WorldTime);
 
             // FPS
             _frames++;
@@ -625,17 +779,17 @@ namespace CityZero
                         PromptLabel = $"[E] {m.DisplayName} — Rest & Save";
                         if (pressed.Contains(Keys.E))
                         {
-                            Health    = Math.Min(Health + 30, 100);
-                            Armor     = Math.Min(Armor  + 20, 100);
-                            HeatScore = Math.Max(HeatScore - 40f, 0f);
+                            HealthSys.Heal(30);
+                            ArmorSys.Heal(20);
+                            HeatSys.AddScore(-40f);
                             SaveManager.Save(this);
                         }
                         return;
                     case MarkerType.Garage:
                         ShowPrompt  = true;
                         PromptLabel = $"[E] {m.DisplayName} — Repair ($200)";
-                        if (pressed.Contains(Keys.E) && Cash >= 200)
-                        { Cash -= 200; Health = 100; Armor = 100; }
+                        if (pressed.Contains(Keys.E) && EconomySys.TrySpend(200, "garage_repair"))
+                        { HealthSys.FullRestore(); ArmorSys.FullRestore(); }
                         return;
                     case MarkerType.Shop:
                     {
@@ -652,10 +806,13 @@ namespace CityZero
                         else
                         {
                             ShowPrompt  = true;
-                            PromptLabel = $"[E] {m.DisplayName} — Buy {buyable.DisplayName} (${buyable.BuyPrice})";
-                            if (pressed.Contains(Keys.E) && Cash >= buyable.BuyPrice)
+                            // Apply faction price discount from FactionSystem
+                            float mult  = FactionSys.GetPriceMultiplier(
+                                GameData.GetDistrict(CurrentDistrict()?.Id ?? "")?.Factions?.FirstOrDefault() ?? "");
+                            int finalPrice = (int)EconomySys.GetFinalPrice(buyable.BuyPrice, mult);
+                            PromptLabel = $"[E] {m.DisplayName} — Buy {buyable.DisplayName} (${finalPrice})";
+                            if (pressed.Contains(Keys.E) && EconomySys.TrySpend(finalPrice, $"buy_{buyable.Id}"))
                             {
-                                Cash -= buyable.BuyPrice;
                                 OwnedWeaponIds.Add(buyable.Id);
                                 EquippedWeapon = buyable;
                                 WeaponAmmo     = buyable.MagazineSize;
@@ -679,6 +836,7 @@ namespace CityZero
                         {
                             MissionPhase     = MissionPhase.Pickup;
                             MissionObjective = "Pick up the package at the marker.";
+                            ActiveRun = MissionSys.StartMission(ActiveMission.Id);
                         }
                     }
                     break;
@@ -695,6 +853,7 @@ namespace CityZero
                                 ? $"Deliver before time runs out. ({(int)ActiveMission.TimeLimit}s)"
                                 : "Deliver to the drop point.";
                             MissionTimer = ActiveMission.TimeLimit;
+                            ActiveRun?.CompleteCurrentObjective();
                         }
                     }
                     break;
@@ -718,7 +877,10 @@ namespace CityZero
                         {
                             MissionPhase = MissionPhase.EscapeHeat;
                             MissionObjective = "Lay low — lose all heat stars.";
-                            HeatScore    = Math.Max(HeatScore, ActiveMission.HeatInjected);
+                            if (ActiveMission.HeatInjected > HeatScore)
+                                HeatSys.SetScore(ActiveMission.HeatInjected);
+                            // Notify MissionManager of delivery objective
+                            ActiveRun?.CompleteCurrentObjective();
                         }
                     }
                     break;
@@ -726,11 +888,14 @@ namespace CityZero
                 case MissionPhase.EscapeHeat:
                     if (HeatLevel == 0)
                     {
-                        Cash += ActiveMission.CashReward;
+                        EconomySys.AddCash(ActiveMission.CashReward, $"mission_{ActiveMission.Id}");
+                        Inventory.Add("cash_roll", ActiveMission.CashReward / 200);
                         foreach (var (fid, delta) in ActiveMission.RepRewards)
-                            if (Reputation.ContainsKey(fid))
-                                Reputation[fid] = Math.Clamp(Reputation[fid] + delta, -100, 100);
+                            FactionSys.ModifyRep(fid, delta, $"mission_{ActiveMission.Id}");
                         CompletedMissions.Add(ActiveMission.Id);
+                        MissionBus.RestoreCompleted(CompletedMissions);
+                        ActiveRun?.Complete();
+                        ActiveRun = null;
                         string next = ActiveMission.NextMissionId;
                         MissionObjective = $"Complete! +${ActiveMission.CashReward}  [R] Next";
                         MissionPhase = MissionPhase.Complete;
@@ -753,7 +918,12 @@ namespace CityZero
                         MissionTimer     = 0f;
                         MissionAvailable = true;
                         // Failed: halve heat (police already know about you)
-                        if (wasFailed) HeatScore = HeatScore * 0.5f;
+                        if (wasFailed)
+                        {
+                            HeatSys.SetScore(HeatScore * 0.5f);
+                            ActiveRun?.Fail();
+                            ActiveRun = null;
+                        }
                     }
                     break;
             }
@@ -787,6 +957,11 @@ namespace CityZero
 
             foreach (var npc in Npcs)
             {
+                // Update blackboard and tick BT
+                npc.Board.Set(BB.IsPlayerHostile, HeatLevel >= 1);
+                npc.Board.Set(BB.CanSeePlayer, npc.IsPolice && Dist(PlayerPos, npc.Pos) < 400f);
+                npc.BT.Tick(npc.Board);
+
                 if (npc.IsPolice)
                 {
                     float tx  = PlayerPos.X - npc.Pos.X;
@@ -799,15 +974,15 @@ namespace CityZero
                                                npc.Pos.Y + ty / len * npc.Speed * dt);
                         if (len < 90f)
                         {
-                            HeatScore = Math.Min(HeatScore + 10f * dt, 100f);
+                            HeatSys.AddScore(10f * dt);
                             // Police deal 6 dmg/s to player on contact (< 30px)
                             if (len < 30f)
                             {
-                                int dmg = Armor > 0
-                                    ? (int)(6f * dt)  // absorbed by armor first
+                                int dmg = ArmorSys.CurrentHealth > 0
+                                    ? (int)(6f * dt)
                                     : (int)(8f * dt);
-                                if (Armor > 0) Armor  = Math.Max(0, Armor  - dmg);
-                                else           Health = Math.Max(0, Health - dmg);
+                                if (ArmorSys.CurrentHealth > 0) ArmorSys.ApplyDamage(dmg);
+                                else                            HealthSys.ApplyDamage(dmg);
                             }
                         }
                     }
@@ -894,7 +1069,7 @@ namespace CityZero
                 if (txt.StartsWith("EVENT:"))
                 {
                     ActiveEventText = txt;
-                    HeatScore = Math.Min(HeatScore + ev.HeatImpact * dt, 100f);
+                    HeatSys.AddScore(ev.HeatImpact * dt);
                 }
                 // ENDED signal: pay cash bonus once if player is in the right district
                 else if (txt.StartsWith("ENDED:") && ev.CashBonus > 0)
@@ -920,13 +1095,13 @@ namespace CityZero
             {
                 if (EquippedWeapon.Category == "melee")
                 {
-                    HeatScore = Math.Min(HeatScore + EquippedWeapon.HeatNoise * 5f, 100f);
+                    HeatSys.AddScore(EquippedWeapon.HeatNoise * 5f);
                     FireTimer = 1f / EquippedWeapon.FireRate;
                 }
                 else if (WeaponAmmo > 0)
                 {
                     WeaponAmmo--;
-                    HeatScore       = Math.Min(HeatScore + EquippedWeapon.HeatNoise * 3f, 100f);
+                    HeatSys.AddScore(EquippedWeapon.HeatNoise * 3f);
                     FireTimer       = 1f / EquippedWeapon.FireRate;
                     MuzzleFlashTimer = 0.06f;
                     ShakeTimer      = 0.08f;
@@ -967,6 +1142,14 @@ namespace CityZero
             float wW = DistrictSize * 3f, wH = DistrictSize * 2f;
             foreach (var p in Peds)
             {
+                // Tick ped BT
+                p.Board.Set(BB.IsPlayerHostile, HeatLevel >= 2);
+                p.BT.Tick(p.Board);
+                int alert = p.Board.Get<int>(BB.AlertLevel);
+                // Peds flee if alarmed
+                if (alert >= 2) p.Speed = Math.Min(p.Speed + 20f * dt, 65f);
+                else            p.Speed = Math.Max(p.Speed - 5f  * dt, 28f);
+
                 float rad = (p.Angle - 90f) * MathF.PI / 180f;
                 p.Pos = new PointF(
                     p.Pos.X + MathF.Cos(rad) * p.Speed * dt,
@@ -1052,7 +1235,9 @@ namespace CityZero
             // Cash penalty: lose 20% (max $500)
             int penalty = Math.Min(Cash / 5, 500);
             Cash      = Math.Max(0, Cash - penalty);
-            Health    = 100; Armor = 0; HeatScore = 0f;
+            HealthSys.FullRestore();
+            ArmorSys.ApplyDamage(ArmorSys.MaxHealth);
+            HeatSys.SetScore(0f);
             PlayerPos = new PointF(55f, 55f);
             Npcs.RemoveAll(n => n.IsPolice);
             SirenAudio.Update(0);
@@ -1080,6 +1265,49 @@ namespace CityZero
                 if (MathF.Abs(PlayerPos.Y - y) < hw) return true;
             return false;
         }
+
+        private SlotSaveData BuildSlotSaveData() => new()
+        {
+            PosX              = PlayerPos.X,
+            PosY              = PlayerPos.Y,
+            Health            = HealthSys.CurrentHealth,
+            Armor             = ArmorSys.CurrentHealth,
+            Wallet            = EconomySys.Wallet,
+            HeatScore         = HeatSys.HeatScore,
+            WorldTime         = WorldTime,
+            Reputation        = FactionSys.GetAll(),
+            ActiveMissionId   = ActiveMission?.Id ?? "",
+            MissionPhaseInt   = (int)MissionPhase,
+            MissionTimer      = MissionTimer,
+            CompletedMissions = CompletedMissions.ToList(),
+            EquippedWeaponId  = EquippedWeapon?.Id,
+            OwnedWeapons      = OwnedWeaponIds.ToList(),
+            WeaponAmmo        = WeaponAmmo,
+        };
+
+        private void ApplySlotSaveData(SlotSaveData sd)
+        {
+            PlayerPos = new PointF(sd.PosX, sd.PosY);
+            int hDiff = sd.Health - HealthSys.CurrentHealth;
+            int aDiff = sd.Armor  - ArmorSys.CurrentHealth;
+            if (hDiff > 0) HealthSys.Heal(hDiff); else HealthSys.ApplyDamage(-hDiff);
+            if (aDiff > 0) ArmorSys.Heal(aDiff);  else ArmorSys.ApplyDamage(-aDiff);
+            EconomySys.RestoreWallet(sd.Wallet);
+            HeatSys.SetScore(sd.HeatScore);
+            WorldTime = sd.WorldTime;
+            var repDict = sd.Reputation.ToDictionary(kv => kv.Key, kv => (int)kv.Value);
+            FactionSys.RestoreFromDict(repDict);
+            CompletedMissions = new HashSet<string>(sd.CompletedMissions);
+            MissionBus.RestoreCompleted(CompletedMissions);
+            ActiveMission  = GameData.GetMission(sd.ActiveMissionId);
+            MissionPhase   = (MissionPhase)sd.MissionPhaseInt;
+            MissionTimer   = sd.MissionTimer;
+            EquippedWeapon = GameData.GetWeapon(sd.EquippedWeaponId ?? "");
+            OwnedWeaponIds = new HashSet<string>(sd.OwnedWeapons);
+            WeaponAmmo     = sd.WeaponAmmo;
+        }
+        // Build the richer SlotSaveData from current state
+        // (primary copy at ~line 1269 — remove this duplicate)
     }   // end GameState
 
     // ── Renderer ──────────────────────────────────────────────────────────────
@@ -1561,6 +1789,17 @@ namespace CityZero
             // Cash
             g.DrawString($"${s.Cash}", _hudFont, new SolidBrush(Color.FromArgb(255,70,210,70)), 130, 8);
 
+            // Inventory summary (items count from SimpleInventory)
+            int totalItems = s.Inventory.AllItems.Values.Sum();
+            g.DrawString($"INV:{totalItems}", _tinyFont,
+                new SolidBrush(Color.FromArgb(160,160,200,160)), 130, 40);
+
+            // Vehicle mode indicator
+            if (s.InVehicle)
+                g.DrawString("IN VEHICLE  [E]=Exit", _smallFont,
+                    new SolidBrush(Color.FromArgb(220,255,220,50)),
+                    _screen.Width / 2 - 80, 26);
+
             // District
             var dist = s.CurrentDistrict();
             g.DrawString(dist?.Name.ToUpper() ?? "—", _smallFont,
@@ -1578,8 +1817,8 @@ namespace CityZero
             DrawBar(g, "ARMOR", s.Armor,  100, Color.FromArgb(55,115,210), 620, 28);
 
             // Controls hint
-            g.DrawString("WASD=Move  E=Interact  Q=Weapon  Space=Fire  +/-=Zoom  F5=Save  F9=Load",
-                _tinyFont, Brushes.DimGray, _screen.Width - 490, 40);
+            g.DrawString("WASD=Move  E=Interact  V=Vehicle  Q=Weapon  Space=Fire  +/-=Zoom  F5=Save  F9=Load",
+                _tinyFont, Brushes.DimGray, _screen.Width - 540, 40);
 
             // Weapon display
             if (s.EquippedWeapon is not null)
