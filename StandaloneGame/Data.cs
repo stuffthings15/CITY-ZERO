@@ -120,8 +120,9 @@ namespace CityZero
             Timer -= dt;
             if (State == WorldEventState.Active && Timer <= 0)
             {
-                State = WorldEventState.Cooldown;
-                Timer = Cooldown;
+                State    = WorldEventState.Cooldown;
+                Timer    = Cooldown;
+                return $"ENDED: {DisplayName}  ({ActiveIn})";   // one-shot transition signal
             }
             else if (State == WorldEventState.Cooldown && Timer <= 0)
             {

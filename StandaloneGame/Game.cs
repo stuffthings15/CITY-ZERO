@@ -34,11 +34,9 @@ namespace CityZero
             foreach (var name in asm.GetManifestResourceNames())
             {
                 if (!name.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) continue;
-                // resource name is like "StandaloneGame.Sprites.Police.png"
                 string key = Path.GetFileNameWithoutExtension(
                     name.Replace("StandaloneGame.Sprites.", ""));
                 using var stream = asm.GetManifestResourceStream(name)!;
-                // Use Format32bppPArgb to keep alpha correct under DrawImage
                 var raw = new Bitmap(stream);
                 var bmp = new Bitmap(raw.Width, raw.Height,
                     System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
@@ -47,6 +45,22 @@ namespace CityZero
                 raw.Dispose();
                 _cache[key] = bmp;
             }
+            // Alias idle directions that have no dedicated sprites
+            // up_right <-> up  (mirrored in DrawPlayer/DrawPeds)
+            // down_left fallback not needed since flipH handles it
+            foreach (int f in new[]{1,2,3,4})
+            {
+                TryAlias($"char_idle_up_right_{f}",   $"char_idle_up_{f}");
+                TryAlias($"char_idle_down_left_{f}",  $"char_idle_down_right_{f}");
+                TryAlias($"char_idle_left_{f}",       $"char_idle_right_{f}");
+                TryAlias($"char_idle_up_left_{f}",    $"char_idle_up_{f}");
+            }
+        }
+
+        private static void TryAlias(string alias, string source)
+        {
+            if (!_cache.ContainsKey(alias) && _cache.TryGetValue(source, out var bmp))
+                _cache[alias] = bmp;
         }
 
         public static Bitmap? Get(string key) =>
@@ -727,7 +741,8 @@ namespace CityZero
                         MissionObjective = "Find the pickup marker.  [E near marker]";
                         MissionTimer     = 0f;
                         MissionAvailable = true;
-                        if (wasFailed) HeatScore = 0f;
+                        // Failed: halve heat (police already know about you)
+                        if (wasFailed) HeatScore = HeatScore * 0.5f;
                     }
                     break;
             }
@@ -862,15 +877,22 @@ namespace CityZero
             foreach (var ev in WorldEvents)
             {
                 string? txt = ev.Tick(dt);
-                if (txt != null)
+                if (txt == null) continue;
+
+                // Active event: add ambient heat
+                if (txt.StartsWith("EVENT:"))
                 {
                     ActiveEventText = txt;
                     HeatScore = Math.Min(HeatScore + ev.HeatImpact * dt, 100f);
-                    if (ev.CashBonus > 0 && ev.State == WorldEventState.Cooldown)
+                }
+                // ENDED signal: pay cash bonus once if player is in the right district
+                else if (txt.StartsWith("ENDED:") && ev.CashBonus > 0)
+                {
+                    var d = CurrentDistrict();
+                    if (d != null && Array.IndexOf(ev.Districts, d.Id) >= 0)
                     {
-                        var d = CurrentDistrict();
-                        if (d != null && Array.IndexOf(ev.Districts, d.Id) >= 0)
-                            Cash += ev.CashBonus;
+                        Cash += ev.CashBonus;
+                        ActiveEventText = $"+${ev.CashBonus} EVENT BONUS!";
                     }
                 }
             }
@@ -1014,6 +1036,9 @@ namespace CityZero
         // Respawn at Old Quarter safehouse
         public void Respawn()
         {
+            // Cash penalty: lose 20% (max $500)
+            int penalty = Math.Min(Cash / 5, 500);
+            Cash      = Math.Max(0, Cash - penalty);
             Health    = 100; Armor = 0; HeatScore = 0f;
             PlayerPos = new PointF(55f, 55f);
             Npcs.RemoveAll(n => n.IsPolice);
@@ -1369,7 +1394,7 @@ namespace CityZero
             // Subtitle
             using var subFont = new Font("Consolas", 13, FontStyle.Regular);
             using var subBr   = new SolidBrush(Color.FromArgb(170, 180, 220, 180));
-            string sub = "A top-down open world crime game";
+            string sub = "A top-down open world crime sandbox  •  v0.4-MVP";
             var ss = g.MeasureString(sub, subFont);
             g.DrawString(sub, subFont, subBr, (_screen.Width - ss.Width) / 2f, _screen.Height / 2f - 40f);
 
