@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon />
+    <StartupObject>CityZero.Program</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Vehicle sprites (UnLucky Studio, CC0) -->
+    <EmbeddedResource Include="Sprites\Police.png" />
+    <EmbeddedResource Include="Sprites\Police_anim_1.png" />
+    <EmbeddedResource Include="Sprites\Police_anim_2.png" />
+    <EmbeddedResource Include="Sprites\Police_anim_3.png" />
+    <EmbeddedResource Include="Sprites\Audi.png" />
+    <EmbeddedResource Include="Sprites\Black_viper.png" />
+    <EmbeddedResource Include="Sprites\Car.png" />
+    <EmbeddedResource Include="Sprites\Mini_truck.png" />
+    <EmbeddedResource Include="Sprites\Mini_van.png" />
+    <EmbeddedResource Include="Sprites\taxi.png" />
+    <EmbeddedResource Include="Sprites\truck.png" />
+    <EmbeddedResource Include="Sprites\Ambulance.png" />
+    <!-- Player character sprites (CC0) -->
+    <EmbeddedResource Include="Sprites\char_idle_down_1.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_2.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_3.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_4.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_right_1.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_right_2.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_right_3.png" />
+    <EmbeddedResource Include="Sprites\char_idle_down_right_4.png" />
+    <EmbeddedResource Include="Sprites\char_idle_right_1.png" />
+    <EmbeddedResource Include="Sprites\char_idle_right_2.png" />
+    <EmbeddedResource Include="Sprites\char_idle_right_3.png" />
+    <EmbeddedResource Include="Sprites\char_idle_right_4.png" />
+    <EmbeddedResource Include="Sprites\char_idle_up_1.png" />
+    <EmbeddedResource Include="Sprites\char_idle_up_2.png" />
+    <EmbeddedResource Include="Sprites\char_idle_up_3.png" />
+    <EmbeddedResource Include="Sprites\char_idle_up_4.png" />
+    <!-- City tileset (Kenney, CC0) -->
+    <EmbeddedResource Include="Sprites\roguelikeCity.png" />
+    <!-- Kenney RPG Urban Pack individual tiles (CC0) -->
+    <EmbeddedResource Include="Sprites\kn_tile_0000.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0008.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0009.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0010.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0011.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0016.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0017.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0027.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0054.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0081.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0094.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0108.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0109.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0135.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0162.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0254.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0255.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0439.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0440.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0441.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0463.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0466.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0467.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0468.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0473.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0474.png" />
+    <EmbeddedResource Include="Sprites\kn_tile_0475.png" />
+    <!-- Walk animation frames (CC0) -->
+    <EmbeddedResource Include="Sprites\char_walk_down_1.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_2.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_3.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_4.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_5.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_6.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_7.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_8.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_1.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_2.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_3.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_4.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_5.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_6.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_7.png" />
+    <EmbeddedResource Include="Sprites\char_walk_down_right_8.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_1.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_2.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_3.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_4.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_5.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_6.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_7.png" />
+    <EmbeddedResource Include="Sprites\char_walk_right_8.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_1.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_2.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_3.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_4.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_5.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_6.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_7.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_8.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_1.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_2.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_3.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_4.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_5.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_6.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_7.png" />
+    <EmbeddedResource Include="Sprites\char_walk_up_right_8.png" />
+    <!-- Audio (CC0) -->
+    <EmbeddedResource Include="Sprites\siren.mp3" />
+  </ItemGroup>
+</Project>
